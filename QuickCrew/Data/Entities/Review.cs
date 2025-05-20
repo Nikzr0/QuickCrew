@@ -36,6 +36,6 @@ namespace QuickCrew.Data.Entities
 
         public string Comment { get; set; } = null!;
 
-        public DateTime ReviewedAt { get; private set; } = DateTime.UtcNow;
+        public DateTime ReviewedAt { get; internal set; } = DateTime.UtcNow;
     }
 }

@@ -8,7 +8,7 @@ namespace QuickCrew.Data.Entities
     {
         public string Status { get; set; } = "Pending";
 
-        public DateTime AppliedAt { get; private set; } = DateTime.UtcNow;
+        public DateTime AppliedAt { get; internal set; } = DateTime.UtcNow;
 
         public int JobPostingId { get; set; }
 

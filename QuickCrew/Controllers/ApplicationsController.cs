@@ -1,8 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-
 using QuickCrew.Data;
 using QuickCrew.Data.Entities;
+using QuickCrew.Shared.Models;
 
 namespace QuickCrew.Controllers
 {
@@ -11,94 +12,110 @@ namespace QuickCrew.Controllers
     public class ApplicationsController : ControllerBase
     {
         private readonly QuickCrewContext _context;
+        private readonly IMapper _mapper;
 
-        public ApplicationsController(QuickCrewContext context)
+        public ApplicationsController(QuickCrewContext context, IMapper mapper)
         {
-            this._context = context;
+            _context = context;
+            _mapper = mapper;
         }
 
         // GET: api/Applications
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Application>>> GetApplications()
+        public async Task<ActionResult<IEnumerable<ApplicationDto>>> GetApplications()
         {
-            return await this._context.Applications.ToListAsync();
+            var applications = await _context.Applications
+                .Include(a => a.JobPosting)
+                .Include(a => a.User)
+                .ToListAsync();
+
+            return Ok(_mapper.Map<List<ApplicationDto>>(applications));
         }
 
         // GET: api/Applications/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Application>> GetApplication(int id)
+        public async Task<ActionResult<ApplicationDto>> GetApplication(int id)
         {
-            var application = await this._context.Applications.FindAsync(id);
+            var application = await _context.Applications
+                .Include(a => a.JobPosting)
+                .Include(a => a.User)
+                .FirstOrDefaultAsync(a => a.Id == id);
 
             if (application == null)
             {
-                return this.NotFound();
+                return NotFound();
             }
 
-            return application;
+            return Ok(_mapper.Map<ApplicationDto>(application));
         }
 
         // PUT: api/Applications/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutApplication(int id, Application application)
+        public async Task<IActionResult> PutApplication(int id, ApplicationDto dto)
         {
-            if (id != application.Id)
+            if (id != dto.Id)
             {
-                return this.BadRequest();
+                return BadRequest();
             }
 
-            this._context.Entry(application).State = EntityState.Modified;
+            var application = _mapper.Map<Application>(dto);
+            _context.Entry(application).State = EntityState.Modified;
 
             try
             {
-                await this._context.SaveChangesAsync();
+                await _context.SaveChangesAsync();
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!this.ApplicationExists(id))
+                if (!ApplicationExists(id))
                 {
-                    return this.NotFound();
+                    return NotFound();
                 }
-                else
-                {
-                    throw;
-                }
+                throw;
             }
 
-            return this.NoContent();
+            return NoContent();
         }
 
         // POST: api/Applications
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Application>> PostApplication(Application application)
+        public async Task<ActionResult<ApplicationDto>> PostApplication(ApplicationDto dto)
         {
-            this._context.Applications.Add(application);
-            await this._context.SaveChangesAsync();
+            var application = _mapper.Map<Application>(dto);
+            application.AppliedAt = DateTime.UtcNow; // Set server-side timestamp
 
-            return this.CreatedAtAction("GetApplication", new { id = application.Id }, application);
+            _context.Applications.Add(application);
+            await _context.SaveChangesAsync();
+
+            // Reload with related data for full DTO mapping
+            var newApplication = await _context.Applications
+                .Include(a => a.JobPosting)
+                .Include(a => a.User)
+                .FirstAsync(a => a.Id == application.Id);
+
+            return CreatedAtAction(
+                nameof(GetApplication),
+                new { id = application.Id },
+                _mapper.Map<ApplicationDto>(newApplication));
         }
 
         // DELETE: api/Applications/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteApplication(int id)
         {
-            var application = await this._context.Applications.FindAsync(id);
+            var application = await _context.Applications.FindAsync(id);
             if (application == null)
             {
-                return this.NotFound();
+                return NotFound();
             }
 
-            this._context.Applications.Remove(application);
-            await this._context.SaveChangesAsync();
+            _context.Applications.Remove(application);
+            await _context.SaveChangesAsync();
 
-            return this.NoContent();
+            return NoContent();
         }
 
-        private bool ApplicationExists(int id)
-        {
-            return this._context.Applications.Any(e => e.Id == id);
-        }
+        private bool ApplicationExists(int id) =>
+            _context.Applications.Any(e => e.Id == id);
     }
 }

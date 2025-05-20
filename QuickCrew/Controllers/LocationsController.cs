@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
+﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using QuickCrew.Data;
 using QuickCrew.Data.Entities;
+using QuickCrew.Shared.Models;
 
 namespace QuickCrew.Controllers
 {
@@ -15,43 +12,38 @@ namespace QuickCrew.Controllers
     public class LocationsController : ControllerBase
     {
         private readonly QuickCrewContext _context;
+        private readonly IMapper _mapper;
 
-        public LocationsController(QuickCrewContext context)
+        public LocationsController(QuickCrewContext context, IMapper mapper)
         {
             _context = context;
+            _mapper = mapper;
         }
 
-        // GET: api/Locations
+        // GET: Всички местоположения
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Location>>> GetLocations()
+        public async Task<ActionResult<IEnumerable<LocationDto>>> GetLocations()
         {
-            return await _context.Locations.ToListAsync();
+            var locations = await _context.Locations.ToListAsync();
+            return Ok(_mapper.Map<List<LocationDto>>(locations));
         }
 
-        // GET: api/Locations/5
+        // GET: Конкретно местоположение по ID
         [HttpGet("{id}")]
-        public async Task<ActionResult<Location>> GetLocation(int id)
+        public async Task<ActionResult<LocationDto>> GetLocation(int id)
         {
             var location = await _context.Locations.FindAsync(id);
-
-            if (location == null)
-            {
-                return NotFound();
-            }
-
-            return location;
+            if (location == null) return NotFound();
+            return Ok(_mapper.Map<LocationDto>(location));
         }
 
-        // PUT: api/Locations/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        // PUT: Актуализиране на местоположение
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutLocation(int id, Location location)
+        public async Task<IActionResult> PutLocation(int id, LocationDto dto)
         {
-            if (id != location.Id)
-            {
-                return BadRequest();
-            }
+            if (id != dto.Id) return BadRequest("ID-то не съвпада");
 
+            var location = _mapper.Map<Location>(dto);
             _context.Entry(location).State = EntityState.Modified;
 
             try
@@ -60,38 +52,41 @@ namespace QuickCrew.Controllers
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!LocationExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
+                if (!LocationExists(id)) return NotFound();
+                throw;
             }
 
             return NoContent();
         }
 
-        // POST: api/Locations
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        // POST: Създаване на ново местоположение
         [HttpPost]
-        public async Task<ActionResult<Location>> PostLocation(Location location)
+        public async Task<ActionResult<LocationDto>> PostLocation(LocationDto dto)
         {
+            var location = _mapper.Map<Location>(dto);
             _context.Locations.Add(location);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetLocation", new { id = location.Id }, location);
+            return CreatedAtAction(
+                nameof(GetLocation),
+                new { id = location.Id },
+                _mapper.Map<LocationDto>(location));
         }
 
-        // DELETE: api/Locations/5
+        // DELETE: Изтриване на местоположение
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteLocation(int id)
         {
             var location = await _context.Locations.FindAsync(id);
-            if (location == null)
+            if (location == null) return NotFound();
+
+            // Проверка дали има свързани обяви
+            var hasJobs = await _context.JobPostings
+                .AnyAsync(j => j.LocationId == id);
+
+            if (hasJobs)
             {
-                return NotFound();
+                return BadRequest("Не може да изтриете местоположение със свързани обяви");
             }
 
             _context.Locations.Remove(location);
@@ -100,9 +95,7 @@ namespace QuickCrew.Controllers
             return NoContent();
         }
 
-        private bool LocationExists(int id)
-        {
-            return _context.Locations.Any(e => e.Id == id);
-        }
+        private bool LocationExists(int id) =>
+            _context.Locations.Any(e => e.Id == id);
     }
 }

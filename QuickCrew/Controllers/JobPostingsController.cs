@@ -1,108 +1,105 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using AutoMapper;
+using QuickCrew.Shared.Models; // Добавете този using за DTOs
 using Microsoft.EntityFrameworkCore;
 using QuickCrew.Data;
 using QuickCrew.Data.Entities;
+using Microsoft.AspNetCore.Mvc;
 
-namespace QuickCrew.Controllers
+[ApiController]
+public class JobPostingsController : ControllerBase
 {
-    [Route("api/[controller]")]
-    [ApiController]
-    public class JobPostingsController : ControllerBase
+    private readonly QuickCrewContext _context;
+    private readonly IMapper _mapper; // Добавете IMapper
+
+    public JobPostingsController(QuickCrewContext context, IMapper mapper)
     {
-        private readonly QuickCrewContext _context;
+        _context = context;
+        _mapper = mapper; // Инициализирайте mapper
+    }
 
-        public JobPostingsController(QuickCrewContext context)
+    // GET: api/JobPostings
+    [HttpGet]
+    public async Task<ActionResult<IEnumerable<JobPostingDto>>> GetJobPostings() // Променете връщания тип
+    {
+        var entities = await _context.JobPostings.ToListAsync();
+        return _mapper.Map<List<JobPostingDto>>(entities); // Мапване към DTO
+    }
+
+    // GET: api/JobPostings/5
+    [HttpGet("{id}")]
+    public async Task<ActionResult<JobPostingDto>> GetJobPosting(int id) // Променете връщания тип
+    {
+        var jobPosting = await _context.JobPostings.FindAsync(id);
+
+        if (jobPosting == null)
         {
-            _context = context;
+            return NotFound();
         }
 
-        // GET: api/JobPostings
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<JobPosting>>> GetJobPostings()
+        return _mapper.Map<JobPostingDto>(jobPosting); // Мапване към DTO
+    }
+
+    // PUT: api/JobPostings/5
+    [HttpPut("{id}")]
+    public async Task<IActionResult> PutJobPosting(int id, JobPostingDto dto) // Приема DTO
+    {
+        if (id != dto.Id)
         {
-            return await _context.JobPostings.ToListAsync();
+            return BadRequest();
         }
 
-        // GET: api/JobPostings/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<JobPosting>> GetJobPosting(int id)
-        {
-            var jobPosting = await _context.JobPostings.FindAsync(id);
+        var entity = _mapper.Map<JobPosting>(dto); // Мапване към Entity
+        _context.Entry(entity).State = EntityState.Modified;
 
-            if (jobPosting == null)
+        try
+        {
+            await _context.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            if (!JobPostingExists(id))
             {
                 return NotFound();
             }
-
-            return jobPosting;
-        }
-
-        // PUT: api/JobPostings/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutJobPosting(int id, JobPosting jobPosting)
-        {
-            if (id != jobPosting.Id)
+            else
             {
-                return BadRequest();
+                throw;
             }
-
-            _context.Entry(jobPosting).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!JobPostingExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return NoContent();
         }
 
-        // POST: api/JobPostings
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPost]
-        public async Task<ActionResult<JobPosting>> PostJobPosting(JobPosting jobPosting)
+        return NoContent();
+    }
+
+    // POST: api/JobPostings
+    [HttpPost]
+    public async Task<ActionResult<JobPostingDto>> PostJobPosting(JobPostingDto dto) // Приема DTO
+    {
+        var entity = _mapper.Map<JobPosting>(dto); // Мапване към Entity
+        _context.JobPostings.Add(entity);
+        await _context.SaveChangesAsync();
+
+        var resultDto = _mapper.Map<JobPostingDto>(entity); // Мапване обратно към DTO
+        return CreatedAtAction("GetJobPosting", new { id = resultDto.Id }, resultDto);
+    }
+
+    // DELETE: api/JobPostings/5
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> DeleteJobPosting(int id)
+    {
+        var jobPosting = await _context.JobPostings.FindAsync(id);
+        if (jobPosting == null)
         {
-            _context.JobPostings.Add(jobPosting);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction("GetJobPosting", new { id = jobPosting.Id }, jobPosting);
+            return NotFound();
         }
 
-        // DELETE: api/JobPostings/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteJobPosting(int id)
-        {
-            var jobPosting = await _context.JobPostings.FindAsync(id);
-            if (jobPosting == null)
-            {
-                return NotFound();
-            }
+        _context.JobPostings.Remove(jobPosting);
+        await _context.SaveChangesAsync();
 
-            _context.JobPostings.Remove(jobPosting);
-            await _context.SaveChangesAsync();
+        return NoContent();
+    }
 
-            return NoContent();
-        }
-
-        private bool JobPostingExists(int id)
-        {
-            return _context.JobPostings.Any(e => e.Id == id);
-        }
+    private bool JobPostingExists(int id)
+    {
+        return _context.JobPostings.Any(e => e.Id == id);
     }
 }

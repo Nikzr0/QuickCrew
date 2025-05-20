@@ -1,8 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-
 using QuickCrew.Data;
 using QuickCrew.Data.Entities;
+using QuickCrew.Shared.Models;
 
 namespace QuickCrew.Controllers
 {
@@ -11,94 +12,107 @@ namespace QuickCrew.Controllers
     public class ReviewsController : ControllerBase
     {
         private readonly QuickCrewContext _context;
+        private readonly IMapper _mapper;
 
-        public ReviewsController(QuickCrewContext context)
+        public ReviewsController(QuickCrewContext context, IMapper mapper)
         {
-            this._context = context;
+            _context = context;
+            _mapper = mapper;
         }
 
-        // GET: api/Reviews
+        // GET: Всички ревюта
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Review>>> GetReviews()
+        public async Task<ActionResult<IEnumerable<ReviewDto>>> GetReviews()
         {
-            return await this._context.Reviews.ToListAsync();
+            var reviews = await _context.Reviews
+                .Include(r => r.Reviewer)
+                .Include(r => r.JobPosting)
+                .ToListAsync();
+
+            return Ok(_mapper.Map<List<ReviewDto>>(reviews));
         }
 
-        // GET: api/Reviews/5
+        // GET: Конкретно ревю по ID
         [HttpGet("{id}")]
-        public async Task<ActionResult<Review>> GetReviews(int id)
+        public async Task<ActionResult<ReviewDto>> GetReview(int id)
         {
-            var reviews = await this._context.Reviews.FindAsync(id);
+            var review = await _context.Reviews
+                .Include(r => r.Reviewer)
+                .Include(r => r.JobPosting)
+                .FirstOrDefaultAsync(r => r.Id == id);
 
-            if (reviews == null)
+            if (review == null)
             {
-                return this.NotFound();
+                return NotFound("Ревюто не е намерено");
             }
 
-            return reviews;
+            return Ok(_mapper.Map<ReviewDto>(review));
         }
 
-        // PUT: api/Reviews/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        // PUT: Актуализиране на ревю
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutReviews(int id, Review reviews)
+        public async Task<IActionResult> PutReview(int id, ReviewDto dto)
         {
-            if (id != reviews.Id)
+            if (id != dto.Id)
             {
-                return this.BadRequest();
+                return BadRequest("ID-то не съвпада");
             }
 
-            this._context.Entry(reviews).State = EntityState.Modified;
+            var review = _mapper.Map<Review>(dto);
+            _context.Entry(review).State = EntityState.Modified;
 
             try
             {
-                await this._context.SaveChangesAsync();
+                await _context.SaveChangesAsync();
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!this.ReviewsExists(id))
-                {
-                    return this.NotFound();
-                }
-                else
-                {
-                    throw;
-                }
+                if (!ReviewExists(id)) return NotFound();
+                throw;
             }
 
-            return this.NoContent();
+            return NoContent();
         }
 
-        // POST: api/Reviews
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        // POST: Създаване на ново ревю
         [HttpPost]
-        public async Task<ActionResult<Review>> PostReviews(Review reviews)
+        public async Task<ActionResult<ReviewDto>> PostReview(ReviewDto dto)
         {
-            this._context.Reviews.Add(reviews);
-            await this._context.SaveChangesAsync();
+            var review = _mapper.Map<Review>(dto);
+            review.ReviewedAt = DateTime.UtcNow; // Задаване на текуща дата
 
-            return this.CreatedAtAction("GetReviews", new { id = reviews.Id }, reviews);
+            _context.Reviews.Add(review);
+            await _context.SaveChangesAsync();
+
+            // Зареждане на пълните данни
+            var newReview = await _context.Reviews
+                .Include(r => r.Reviewer)
+                .Include(r => r.JobPosting)
+                .FirstAsync(r => r.Id == review.Id);
+
+            return CreatedAtAction(
+                nameof(GetReview),
+                new { id = review.Id },
+                _mapper.Map<ReviewDto>(newReview));
         }
 
-        // DELETE: api/Reviews/5
+        // DELETE: Изтриване на ревю
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteReviews(int id)
+        public async Task<IActionResult> DeleteReview(int id)
         {
-            var reviews = await this._context.Reviews.FindAsync(id);
-            if (reviews == null)
+            var review = await _context.Reviews.FindAsync(id);
+            if (review == null)
             {
-                return this.NotFound();
+                return NotFound("Ревюто не е намерено");
             }
 
-            this._context.Reviews.Remove(reviews);
-            await this._context.SaveChangesAsync();
+            _context.Reviews.Remove(review);
+            await _context.SaveChangesAsync();
 
-            return this.NoContent();
+            return NoContent();
         }
 
-        private bool ReviewsExists(int id)
-        {
-            return this._context.Reviews.Any(e => e.Id == id);
-        }
+        private bool ReviewExists(int id) =>
+            _context.Reviews.Any(e => e.Id == id);
     }
 }

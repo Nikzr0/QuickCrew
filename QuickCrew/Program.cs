@@ -2,7 +2,9 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.EntityFrameworkCore;
 
-
+//using AutoMapper;
+//using AutoMapper.Extensions.Microsoft.DependencyInjection;
+using QuickCrew.Extensions;
 using QuickCrew.Data;
 using QuickCrew.Data.Entities;
 using QuickCrew.Extensions;
@@ -10,7 +12,9 @@ using QuickCrew.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
+
 //builder.Services.AddTransient<IEmailSender, NullEmailSender>();
+builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
 builder.Services.AddControllers(options =>
 {

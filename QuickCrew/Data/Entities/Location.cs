@@ -8,5 +8,7 @@ namespace QuickCrew.Data.Entities
         public string City { get; set; } = null!;
         public string State { get; set; } = null!;
         public string ZipCode { get; set; } = null!;
+
+        public ICollection<JobPosting> JobPostings { get; set; } = new List<JobPosting>();
     }
 }
