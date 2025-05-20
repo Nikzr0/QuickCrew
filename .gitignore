@@ -1,0 +1,17 @@
+# Visual Studio временни файлове
+.vs/
+bin/
+obj/
+*.user
+*.suo
+*.cache
+
+# Компилирани файлове
+*.dll
+*.exe
+*.pdb
+
+# Git временни файлове
+*.db
+*.db-shm
+*.db-wal
