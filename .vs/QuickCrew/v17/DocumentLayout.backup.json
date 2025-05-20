@@ -1,0 +1,57 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "D:\\Projects\\QuickCrew\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{48B76C05-75C5-415A-82E5-047FD01CB87F}|QuickCrew\\QuickCrew.csproj|d:\\projects\\quickcrew\\quickcrew\\extensions\\swaggerconfigextensions.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{48B76C05-75C5-415A-82E5-047FD01CB87F}|QuickCrew\\QuickCrew.csproj|solutionrelative:quickcrew\\extensions\\swaggerconfigextensions.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{48B76C05-75C5-415A-82E5-047FD01CB87F}|QuickCrew\\QuickCrew.csproj|d:\\projects\\quickcrew\\quickcrew\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{48B76C05-75C5-415A-82E5-047FD01CB87F}|QuickCrew\\QuickCrew.csproj|solutionrelative:quickcrew\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 1,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{6324226f-61b6-4f28-92ee-18d4b5fe1e48}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "SwaggerConfigExtensions.cs",
+              "DocumentMoniker": "D:\\Projects\\QuickCrew\\QuickCrew\\Extensions\\SwaggerConfigExtensions.cs",
+              "RelativeDocumentMoniker": "QuickCrew\\Extensions\\SwaggerConfigExtensions.cs",
+              "ToolTip": "D:\\Projects\\QuickCrew\\QuickCrew\\Extensions\\SwaggerConfigExtensions.cs",
+              "RelativeToolTip": "QuickCrew\\Extensions\\SwaggerConfigExtensions.cs",
+              "ViewState": "AgIAAAMAAAAAAAAAAAAAAA8AAAAmAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-05-16T19:17:52.825Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "Program.cs",
+              "DocumentMoniker": "D:\\Projects\\QuickCrew\\QuickCrew\\Program.cs",
+              "RelativeDocumentMoniker": "QuickCrew\\Program.cs",
+              "ToolTip": "D:\\Projects\\QuickCrew\\QuickCrew\\Program.cs",
+              "RelativeToolTip": "QuickCrew\\Program.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-05-16T18:30:29.848Z"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
