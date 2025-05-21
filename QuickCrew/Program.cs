@@ -1,10 +1,6 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.EntityFrameworkCore;
-
-//using AutoMapper;
-//using AutoMapper.Extensions.Microsoft.DependencyInjection;
-using QuickCrew.Extensions;
 using QuickCrew.Data;
 using QuickCrew.Data.Entities;
 using QuickCrew.Extensions;
@@ -12,11 +8,11 @@ using QuickCrew.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
-
-//builder.Services.AddTransient<IEmailSender, NullEmailSender>();
+// Add services to the container
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
-builder.Services.AddControllers(options =>
+// Configure both API controllers and MVC views support
+builder.Services.AddControllersWithViews(options =>
 {
     options.Conventions.Add(new RouteTokenTransformerConvention(new SlugifyParameterTransformer()));
 });
@@ -24,14 +20,16 @@ builder.Services.AddControllers(options =>
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerDocumentation();
 
+// Database configuration
 builder.Services.AddDbContext<QuickCrewContext>(options =>
     options.UseSqlServer("Server=.;Database=QuickCrew;Trusted_Connection=True;MultipleActiveResultSets=true;TrustServerCertificate=True"));
 
+// Authentication/Authorization
 builder.Services.AddAuthorization();
 builder.Services.AddAuthentication(IdentityConstants.BearerScheme)
-    //.AddCookie(IdentityConstants.ApplicationScheme)
     .AddBearerToken(IdentityConstants.BearerScheme);
 
+// Identity configuration
 builder.Services.AddIdentityCore<User>(options =>
 {
     options.Password.RequireDigit = false;
@@ -42,38 +40,40 @@ builder.Services.AddIdentityCore<User>(options =>
     options.SignIn.RequireConfirmedAccount = false;
     options.SignIn.RequireConfirmedEmail = false;
 })
-    .AddRoles<IdentityRole>() // adds roles
-    .AddEntityFrameworkStores<QuickCrewContext>() // adds to db
-    .AddApiEndpoints();// adds to swagger
-
-
-builder.Services.AddSwaggerGen();
+    .AddRoles<IdentityRole>()
+    .AddEntityFrameworkStores<QuickCrewContext>()
+    .AddApiEndpoints();
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwaggerDocumentation();
-
-    app.InitializeDatabase();
-}
-
+// Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
-};
+    app.UseDeveloperExceptionPage();
+    app.InitializeDatabase();
+}
 
 app.UseHttpsRedirection();
+app.UseStaticFiles(); // Required for MVC
+
+app.UseRouting();
 
 app.UseAuthentication();
 app.UseAuthorization();
 
-
+// API Endpoints
 app.MapGroup("api/auth")
-    .WithTags("Auth")
-    .MapCustomIdentityApi();
+   .WithTags("Auth")
+   .MapCustomIdentityApi();
 
+// MVC Routes
+app.MapControllerRoute(
+    name: "default",
+    pattern: "{controller=Home}/{action=Index}/{id?}");
+
+// API Controllers
 app.MapControllers();
 
 app.Run();

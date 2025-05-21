@@ -5,29 +5,30 @@ using QuickCrew.Data;
 using QuickCrew.Data.Entities;
 using Microsoft.AspNetCore.Mvc;
 
+[Route("api/[controller]")]
 [ApiController]
 public class JobPostingsController : ControllerBase
 {
     private readonly QuickCrewContext _context;
-    private readonly IMapper _mapper; // Добавете IMapper
+    private readonly IMapper _mapper;
 
     public JobPostingsController(QuickCrewContext context, IMapper mapper)
     {
         _context = context;
-        _mapper = mapper; // Инициализирайте mapper
+        _mapper = mapper;
     }
 
     // GET: api/JobPostings
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<JobPostingDto>>> GetJobPostings() // Променете връщания тип
+    public async Task<ActionResult<IEnumerable<JobPostingDto>>> GetJobPostings()
     {
         var entities = await _context.JobPostings.ToListAsync();
-        return _mapper.Map<List<JobPostingDto>>(entities); // Мапване към DTO
+        return _mapper.Map<List<JobPostingDto>>(entities);
     }
 
     // GET: api/JobPostings/5
     [HttpGet("{id}")]
-    public async Task<ActionResult<JobPostingDto>> GetJobPosting(int id) // Променете връщания тип
+    public async Task<ActionResult<JobPostingDto>> GetJobPosting(int id)
     {
         var jobPosting = await _context.JobPostings.FindAsync(id);
 
@@ -36,19 +37,19 @@ public class JobPostingsController : ControllerBase
             return NotFound();
         }
 
-        return _mapper.Map<JobPostingDto>(jobPosting); // Мапване към DTO
+        return _mapper.Map<JobPostingDto>(jobPosting);
     }
 
     // PUT: api/JobPostings/5
     [HttpPut("{id}")]
-    public async Task<IActionResult> PutJobPosting(int id, JobPostingDto dto) // Приема DTO
+    public async Task<IActionResult> PutJobPosting(int id, JobPostingDto dto)
     {
         if (id != dto.Id)
         {
             return BadRequest();
         }
 
-        var entity = _mapper.Map<JobPosting>(dto); // Мапване към Entity
+        var entity = _mapper.Map<JobPosting>(dto);
         _context.Entry(entity).State = EntityState.Modified;
 
         try
@@ -72,13 +73,13 @@ public class JobPostingsController : ControllerBase
 
     // POST: api/JobPostings
     [HttpPost]
-    public async Task<ActionResult<JobPostingDto>> PostJobPosting(JobPostingDto dto) // Приема DTO
+    public async Task<ActionResult<JobPostingDto>> PostJobPosting(JobPostingDto dto)
     {
-        var entity = _mapper.Map<JobPosting>(dto); // Мапване към Entity
+        var entity = _mapper.Map<JobPosting>(dto);
         _context.JobPostings.Add(entity);
         await _context.SaveChangesAsync();
 
-        var resultDto = _mapper.Map<JobPostingDto>(entity); // Мапване обратно към DTO
+        var resultDto = _mapper.Map<JobPostingDto>(entity);
         return CreatedAtAction("GetJobPosting", new { id = resultDto.Id }, resultDto);
     }
 
