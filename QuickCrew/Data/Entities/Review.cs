@@ -1,6 +1,6 @@
-﻿using System.Text.Json.Serialization;
-
-using QuickCrew.Data.Common.Models;
+﻿using QuickCrew.Data.Common.Models;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace QuickCrew.Data.Entities
 {
@@ -8,34 +8,27 @@ namespace QuickCrew.Data.Entities
     {
         private int rating;
 
-        public string ReviewerId { get; set; } = null!;
+        public string ReviewerId { get; set; }
 
+        [ForeignKey(nameof(ReviewerId))]
         [JsonIgnore]
-        public User? Reviewer { get; set; } = null!;
+        public User Reviewer { get; set; }
 
-        public string JobPostingId { get; set; } = null!;
+        public int JobPostingId { get; set; }
 
+        [ForeignKey(nameof(JobPostingId))]
         [JsonIgnore]
-        public JobPosting? JobPosting { get; set; } = null!;
+        public JobPosting JobPosting { get; set; }
 
         public int Rating
         {
-            get => this.rating;
-            set
-            {
-                if (1 <= value && value <= 5)
-                {
-                    this.rating = value;
-                }
-                else
-                {
-                    throw new InvalidOperationException();
-                }
-            }
+            get => rating;
+            set => rating = value is >= 1 and <= 5
+                ? value
+                : throw new InvalidOperationException("Rating must be 1-5");
         }
 
-        public string Comment { get; set; } = null!;
-
+        public string Comment { get; set; }
         public DateTime ReviewedAt { get; internal set; } = DateTime.UtcNow;
     }
 }

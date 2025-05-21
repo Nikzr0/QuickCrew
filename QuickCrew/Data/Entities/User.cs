@@ -16,18 +16,9 @@ namespace QuickCrew.Data.Entities
 
         public string Name { get; set; } = null!;
 
-        public int Rating
-        {
-            get
-            {
-                if (!this.Reviews.Any())
-                {
-                    return 0;
-                }
-
-                return (int)Math.Round(this.Reviews.Average(r => r.Rating));
-            }
-        }
+        public int Rating => Reviews?.Any() == true
+            ? (int)Math.Round(Reviews.Average(r => r.Rating))
+            : 0;
 
         [JsonIgnore]
         public IEnumerable<Review> Reviews { get; set; }
