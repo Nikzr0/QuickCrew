@@ -1,17 +1,25 @@
-# Visual Studio временни файлове
+## Visual Studio
 .vs/
-bin/
-obj/
 *.user
 *.suo
 *.cache
 
-# Компилирани файлове
+## Build output
+bin/
+obj/
 *.dll
 *.exe
 *.pdb
 
-# Git временни файлове
+## .NET
+project.lock.json
+project.fragment.lock.json
+
+## Entity Framework (SQLite temp files)
 *.db
 *.db-shm
 *.db-wal
+
+## Others
+*.log
+*.tmp
