@@ -1,43 +1,46 @@
 ﻿@model QuickCrew.Shared.Models.JobPostingDto
 
 @{
-    ViewData["Title"] = "Job Details";
+    ViewData["Title"] = $"{Model.Title} - Job Details";
 }
-@* TODO: Location and Category should be added *@
+
 <div class="container mt-4">
-    <div class="card shadow">
-        <div class="card-header bg-primary text-white">
-            <h2>@Model.Title</h2>
+    <div class="card shadow-lg border-primary">
+        <div class="card-header bg-primary text-white py-3">
+            <h1 class="card-title mb-0 display-5">@Model.Title</h1>
+            <h4 class="card-subtitle mt-2 text-white-50">
+                <i class="bi bi-geo-alt-fill me-1"></i>@Model.Location?.City, @Model.Location?.State
+            </h4>
         </div>
         <div class="card-body">
-            <div class="row mb-3">
+            <h3 class="mb-3 text-primary">Job Description</h3>
+            <p class="card-text lead">@Model.Description</p>
+
+            <hr class="my-4" />
+
+            <div class="row">
                 <div class="col-md-6">
-                    <h5 class="text-muted">Location</h5>
-                    <p>@Model.Location</p>
+                    <dl class="row mb-0">
+                        <dt class="col-sm-4 text-muted">Slots Needed:</dt>
+                        <dd class="col-sm-8 fw-bold">@Model.SlotsNeeded</dd>
+
+                        <dt class="col-sm-4 text-muted">Category:</dt>
+                        <dd class="col-sm-8 fw-bold">@Model.Category?.Name</dd>
+
+                        <dt class="col-sm-4 text-muted">Posted On:</dt>
+                        <dd class="col-sm-8 fw-bold">@Model.CreatedDate.ToLongDateString()</dd>
+                    </dl>
                 </div>
-                <div class="col-md-6">
-                    <h5 class="text-muted">Category</h5>
-                    <span class="badge bg-primary">@Model.CategoryName</span>
-                </div>
             </div>
 
-
-            <h5 class="text-muted">Description</h5>
-            <div class="p-3 bg-light rounded mb-3">
-                @Model.Description
-            </div>
-
-            <div class="d-flex justify-content-between">
-                <a asp-action="Index" class="btn btn-outline-secondary">
-                    <i class="bi bi-arrow-left"></i> Back to List
-                </a>
-                <a href="#" class="btn btn-primary">
-                    <i class="bi bi-send"></i> Apply Now
-                </a>
-            </div>
         </div>
-        <div class="card-footer text-muted">
-            Posted on @Model.CreatedDate.ToString("MMMM dd, yyyy")
+        <div class="card-footer bg-light border-top d-flex justify-content-end gap-2 py-3">
+            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning btn-lg">
+                <i class="bi bi-pencil-fill me-2"></i>Edit
+            </a>
+            <a asp-action="Index" class="btn btn-secondary btn-lg">
+                <i class="bi bi-arrow-left-circle me-2"></i>Back to List
+            </a>
         </div>
     </div>
 </div>

@@ -9,12 +9,13 @@ namespace QuickCrew.Extensions
     {
         public MappingProfile()
         {
-            // Entity → DTO
-            //CreateMap<JobPosting, JobPostingDto>();
+            CreateMap<Location, LocationDto>().ReverseMap();
+            CreateMap<Category, CategoryDto>().ReverseMap();
+
             CreateMap<JobPosting, JobPostingDto>()
-                .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.Category.Name))
-                .ForMember(dest => dest.Location, opt => opt.MapFrom(src => $"{src.Location.Address}, {src.Location.City}, {src.Location.State} {src.Location.ZipCode}"))
-                .ForMember(dest => dest.CreatedDate, opt => opt.MapFrom(src => src.CreatedDate));
+                .ForMember(dest => dest.Location, opt => opt.MapFrom(src => src.Location)) // Map the Location object
+                .ForMember(dest => dest.Category, opt => opt.MapFrom(src => src.Category)) // Map the Category object
+                .ReverseMap();
 
             CreateMap<JobPostingDto, JobPosting>()
                 .ForMember(dest => dest.Category, opt => opt.Ignore())

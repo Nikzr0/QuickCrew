@@ -20,7 +20,7 @@ namespace QuickCrew.Web.Controllers
             _logger = logger;
         }
 
-        public async Task<IActionResult> Index(int pageNumber = 1, int pageSize = 9)
+        public async Task<IActionResult> Index(int pageNumber = 1, int pageSize = 12)
         {
             try
             {

@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using QuickCrew.Shared.Models;
 using QuickCrew.Web.Models;
 using System.Diagnostics;
-using System.Net.Http;
+using System.Net.Http.Json;
 
 namespace QuickCrew.Web.Controllers
 {
@@ -11,12 +11,11 @@ namespace QuickCrew.Web.Controllers
         private readonly ILogger<HomeController> _logger;
         private readonly HttpClient _httpClient;
 
-        public HomeController(
-            ILogger<HomeController> logger,
-            IHttpClientFactory httpClientFactory)
+        public HomeController(ILogger<HomeController> logger, HttpClient httpClient)
         {
             _logger = logger;
-            _httpClient = httpClientFactory.CreateClient("QuickCrewAPI");
+            _httpClient = httpClient;
+            _httpClient.BaseAddress = new Uri("https://localhost:7224/");
         }
 
         public async Task<IActionResult> Index()
@@ -25,46 +24,26 @@ namespace QuickCrew.Web.Controllers
 
             try
             {
-                // Fetch job postings (all, then we'll take top N for "recent")
-                var jobs = await _httpClient.GetFromJsonAsync<List<JobPostingDto>>("api/job-postings");
+                var pagedJobs = await _httpClient.GetFromJsonAsync<PagedResult<JobPostingDto>>("api/job-postings?pageNumber=1&pageSize=5");
 
-                // Fetch stats from API (if you have /api/Stats endpoint)
-                PlatformStatsDto stats = null;
-                try
+                if (pagedJobs != null && pagedJobs.Items != null)
                 {
-                    stats = await _httpClient.GetFromJsonAsync<PlatformStatsDto>("api/Stats");
+                    viewModel.RecentJobPostings = pagedJobs.Items;
+                    viewModel.ActiveJobs = pagedJobs.TotalCount;
                 }
-                catch (HttpRequestException ex)
+                else
                 {
-                    _logger.LogWarning(ex, "Could not fetch platform stats from API. API endpoint /api/Stats might be missing or returned an error.");
-                    // Set default values if stats API is not available
-                    stats = new PlatformStatsDto { TotalUsers = 0, ActiveProjects = 0 };
+                    _logger.LogWarning("API returned null or empty PagedResult for recent job postings on dashboard.");
                 }
-
-
-                viewModel.ActiveJobs = jobs?.Count ?? 0;
-                viewModel.RegisteredUsers = stats?.TotalUsers ?? 0;
-                viewModel.ActiveProjects = stats?.ActiveProjects ?? 0;
-
-                viewModel.RecentJobPostings = jobs?
-                    .OrderByDescending(j => j.CreatedDate)
-                    .Take(5)
-                    .ToList() ?? new List<JobPostingDto>();
-
-                return View(viewModel);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error loading dashboard data");
-
-                viewModel.ActiveJobs = 0;
-                viewModel.RegisteredUsers = 0;
-                viewModel.ActiveProjects = 0;
-                viewModel.RecentJobPostings = new List<JobPostingDto>();
-
-                return View(viewModel);
+                _logger.LogError(ex, "Error loading recent job postings for dashboard.");
             }
+
+            return View(viewModel);
         }
+
         public IActionResult Privacy()
         {
             return View();
@@ -76,10 +55,4 @@ namespace QuickCrew.Web.Controllers
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
     }
-    
-    //public class PlatformStatsDto
-    //{
-    //    public int TotalUsers { get; set; }
-    //    public int ActiveProjects { get; set; }
-    //}
 }

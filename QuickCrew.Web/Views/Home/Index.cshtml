@@ -10,7 +10,6 @@
             <h1 class="display-5 fw-bold">Welcome to QuickCrew</h1>
             <p class="lead">Find your next job today!</p>
             <a href="/JobPosts" class="btn btn-primary btn-lg mt-3">
-                @* Corrected: Link to JobPosts controller/view *@
                 <i class="bi bi-briefcase me-2"></i>View Job Postings
             </a>
         </div>
@@ -20,7 +19,7 @@
         <div class="col-md-4">
             <div class="card h-100 border-0 shadow-sm">
                 <div class="card-body text-center">
-                    <h3 class="text-primary">@Model.ActiveJobs</h3> @* Use Model.ActiveJobs *@
+                    <h3 class="text-primary">@Model.ActiveJobs</h3>
                     <p class="text-muted">Active Jobs</p>
                 </div>
             </div>
@@ -28,7 +27,7 @@
         <div class="col-md-4">
             <div class="card h-100 border-0 shadow-sm">
                 <div class="card-body text-center">
-                    <h3 class="text-success">@Model.RegisteredUsers</h3> @* Use Model.RegisteredUsers *@
+                    <h3 class="text-success">@Model.RegisteredUsers</h3>
                     <p class="text-muted">Team Members</p>
                 </div>
             </div>
@@ -36,7 +35,7 @@
         <div class="col-md-4">
             <div class="card h-100 border-0 shadow-sm">
                 <div class="card-body text-center">
-                    <h3 class="text-warning">@Model.ActiveProjects</h3> @* Use Model.ActiveProjects *@
+                    <h3 class="text-warning">@Model.ActiveProjects</h3>
                     <p class="text-muted">Ongoing Projects</p>
                 </div>
             </div>
@@ -55,8 +54,8 @@
                     {
                         <div class="list-group-item border-0">
                             <small class="text-muted">Posted on @job.CreatedDate.ToString("d")</small>
-                            <p class="mb-1">New job posting: **@job.Title** in **@job.Location** (@job.CategoryName)</p>
-                            <a asp-controller="JobPosts" asp-action="Details" asp-route-id="@job.Id" class="badge bg-info text-decoration-none">View Details</a> @* Link to job details *@
+                            <p class="mb-1">New job posting: **@job.Title** in **@job.Location?.City**, **@job.Location?.State** (@job.Category?.Name)</p>
+                            <a asp-controller="JobPosts" asp-action="Details" asp-route-id="@job.Id" class="badge bg-info text-decoration-none">View Details</a>
                         </div>
                     }
                 }
