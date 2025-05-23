@@ -21,30 +21,50 @@ namespace QuickCrew.Web.Controllers
 
         public async Task<IActionResult> Index()
         {
+            var viewModel = new DashboardViewModel();
+
             try
             {
-                // Fetch stats from API
+                // Fetch job postings (all, then we'll take top N for "recent")
                 var jobs = await _httpClient.GetFromJsonAsync<List<JobPostingDto>>("api/job-postings");
-                var stats = await _httpClient.GetFromJsonAsync<PlatformStatsDto>("api/Stats");
 
-                ViewBag.ActiveJobs = jobs?.Count ?? 0;
-                ViewBag.RegisteredUsers = stats?.TotalUsers ?? 0;
-                ViewBag.ActiveProjects = stats?.ActiveProjects ?? 0;
+                // Fetch stats from API (if you have /api/Stats endpoint)
+                PlatformStatsDto stats = null;
+                try
+                {
+                    stats = await _httpClient.GetFromJsonAsync<PlatformStatsDto>("api/Stats");
+                }
+                catch (HttpRequestException ex)
+                {
+                    _logger.LogWarning(ex, "Could not fetch platform stats from API. API endpoint /api/Stats might be missing or returned an error.");
+                    // Set default values if stats API is not available
+                    stats = new PlatformStatsDto { TotalUsers = 0, ActiveProjects = 0 };
+                }
 
-                return View();
+
+                viewModel.ActiveJobs = jobs?.Count ?? 0;
+                viewModel.RegisteredUsers = stats?.TotalUsers ?? 0;
+                viewModel.ActiveProjects = stats?.ActiveProjects ?? 0;
+
+                viewModel.RecentJobPostings = jobs?
+                    .OrderByDescending(j => j.CreatedDate)
+                    .Take(5)
+                    .ToList() ?? new List<JobPostingDto>();
+
+                return View(viewModel);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error loading dashboard data");
 
-                ViewBag.ActiveJobs = 0;
-                ViewBag.RegisteredUsers = 0;
-                ViewBag.ActiveProjects = 0;
+                viewModel.ActiveJobs = 0;
+                viewModel.RegisteredUsers = 0;
+                viewModel.ActiveProjects = 0;
+                viewModel.RecentJobPostings = new List<JobPostingDto>();
 
-                return View();
+                return View(viewModel);
             }
         }
-
         public IActionResult Privacy()
         {
             return View();
@@ -56,38 +76,10 @@ namespace QuickCrew.Web.Controllers
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
     }
-
-    public class JobPostingsController : Controller
-    {
-        private readonly HttpClient _httpClient;
-        private readonly ILogger<JobPostingsController> _logger;
-
-        public JobPostingsController(
-            IHttpClientFactory httpClientFactory,
-            ILogger<JobPostingsController> logger)
-        {
-            _httpClient = httpClientFactory.CreateClient("QuickCrewAPI");
-            _logger = logger;
-        }
-
-        public async Task<IActionResult> Index()
-        {
-            try
-            {
-                var jobs = await _httpClient.GetFromJsonAsync<List<JobPostingDto>>("api/job-postings");
-                return View(jobs ?? new List<JobPostingDto>());
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error loading job postings");
-                return View(new List<JobPostingDto>());
-            }
-        }
-    }
-
-    public class PlatformStatsDto
-    {
-        public int TotalUsers { get; set; }
-        public int ActiveProjects { get; set; }
-    }
+    
+    //public class PlatformStatsDto
+    //{
+    //    public int TotalUsers { get; set; }
+    //    public int ActiveProjects { get; set; }
+    //}
 }

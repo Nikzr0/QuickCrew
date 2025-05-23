@@ -1,25 +1,26 @@
-﻿@{
+﻿@model QuickCrew.Web.Models.DashboardViewModel
+
+@{
     ViewData["Title"] = "QuickCrew - Dashboard";
 }
 
 <div class="container">
-    <!-- Hero Section -->
     <div class="p-5 mb-4 bg-light rounded-3">
         <div class="container-fluid py-5 text-center">
             <h1 class="display-5 fw-bold">Welcome to QuickCrew</h1>
             <p class="lead">Find your next job today!</p>
-            <a href="/JobPosting" class="btn btn-primary btn-lg mt-3">
+            <a href="/JobPosts" class="btn btn-primary btn-lg mt-3">
+                @* Corrected: Link to JobPosts controller/view *@
                 <i class="bi bi-briefcase me-2"></i>View Job Postings
             </a>
         </div>
     </div>
 
-    <!-- Quick Stats Cards -->
     <div class="row g-4 mb-4">
         <div class="col-md-4">
             <div class="card h-100 border-0 shadow-sm">
                 <div class="card-body text-center">
-                    <h3 class="text-primary">@ViewBag.ActiveJobs</h3>
+                    <h3 class="text-primary">@Model.ActiveJobs</h3> @* Use Model.ActiveJobs *@
                     <p class="text-muted">Active Jobs</p>
                 </div>
             </div>
@@ -27,7 +28,7 @@
         <div class="col-md-4">
             <div class="card h-100 border-0 shadow-sm">
                 <div class="card-body text-center">
-                    <h3 class="text-success">@ViewBag.RegisteredUsers</h3>
+                    <h3 class="text-success">@Model.RegisteredUsers</h3> @* Use Model.RegisteredUsers *@
                     <p class="text-muted">Team Members</p>
                 </div>
             </div>
@@ -35,29 +36,38 @@
         <div class="col-md-4">
             <div class="card h-100 border-0 shadow-sm">
                 <div class="card-body text-center">
-                    <h3 class="text-warning">@ViewBag.ActiveProjects</h3>
+                    <h3 class="text-warning">@Model.ActiveProjects</h3> @* Use Model.ActiveProjects *@
                     <p class="text-muted">Ongoing Projects</p>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Recent Activity Section -->
     <div class="card border-0 shadow-sm">
         <div class="card-header bg-white">
             <h5 class="mb-0">Recent Activity</h5>
         </div>
         <div class="card-body">
             <div class="list-group list-group-flush">
-                <div class="list-group-item border-0">
-                    <small class="text-muted">Today</small>
-                    <p class="mb-1">New job posting "Web Developer" added</p>
-                </div>
-                <div class="list-group-item border-0">
-                    <small class="text-muted">Yesterday</small>
-                    <p class="mb-1">3 new team members joined</p>
-                </div>
+                @if (Model.RecentJobPostings != null && Model.RecentJobPostings.Any())
+                {
+                    @foreach (var job in Model.RecentJobPostings)
+                    {
+                        <div class="list-group-item border-0">
+                            <small class="text-muted">Posted on @job.CreatedDate.ToString("d")</small>
+                            <p class="mb-1">New job posting: **@job.Title** in **@job.Location** (@job.CategoryName)</p>
+                            <a asp-controller="JobPosts" asp-action="Details" asp-route-id="@job.Id" class="badge bg-info text-decoration-none">View Details</a> @* Link to job details *@
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="list-group-item border-0 text-center text-muted">
+                        No recent job postings available.
+                    </div>
+                }
             </div>
         </div>
     </div>
+
 </div>
