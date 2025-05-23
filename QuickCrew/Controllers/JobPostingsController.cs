@@ -19,33 +19,54 @@ public class JobPostingsController : ControllerBase
         _mapper = mapper;
     }
 
-    // GET: api/job-postings
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<JobPostingDto>>> GetJobPostings()
+    public async Task<ActionResult<PagedResult<JobPostingDto>>> GetJobPostings(
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 9)
     {
-        var entities = await _context.JobPostings
-            .Include(j => j.Category)
-            .Include(j => j.Location)
-            .ToListAsync();
-        return _mapper.Map<List<JobPostingDto>>(entities);
+        if (pageSize <= 0) pageSize = 9;
+        if (pageNumber <= 0) pageNumber = 1;
+
+        var totalCount = await _context.JobPostings.CountAsync();
+
+        var jobPostings = await _context.JobPostings
+                                        .Include(j => j.Category)
+                                        .Include(j => j.Location)
+                                        .OrderByDescending(j => j.CreatedDate)
+                                        .Skip((pageNumber - 1) * pageSize)
+                                        .Take(pageSize)
+                                        .ToListAsync();
+
+        var jobPostingDtos = _mapper.Map<List<JobPostingDto>>(jobPostings);
+
+        var pagedResult = new PagedResult<JobPostingDto>
+        {
+            Items = jobPostingDtos,
+            TotalCount = totalCount,
+            PageNumber = pageNumber,
+            PageSize = pageSize
+        };
+
+        return Ok(pagedResult);
     }
 
-    // GET: api/job-postings/5
     [HttpGet("{id}")]
     public async Task<ActionResult<JobPostingDto>> GetJobPosting(int id)
     {
         var jobPosting = await _context.JobPostings
-            .Include(j => j.Category)
-            .Include(j => j.Location)
-            .FirstOrDefaultAsync(j => j.Id == id);
+                                       .Include(j => j.Category)
+                                       .Include(j => j.Location)
+                                       .FirstOrDefaultAsync(j => j.Id == id);
 
         if (jobPosting == null)
         {
             return NotFound();
         }
 
-        return _mapper.Map<JobPostingDto>(jobPosting);
+        var jobPostingDto = _mapper.Map<JobPostingDto>(jobPosting);
+        return jobPostingDto;
     }
+
 
     // PUT: api/job-postings/5
     [HttpPut("{id}")]

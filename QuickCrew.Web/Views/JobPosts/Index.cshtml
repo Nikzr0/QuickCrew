@@ -1,4 +1,4 @@
-﻿@model List<QuickCrew.Shared.Models.JobPostingDto>
+﻿@model QuickCrew.Shared.Models.PagedResult<QuickCrew.Shared.Models.JobPostingDto>
 
 @{
     ViewData["Title"] = "Job Posts";
@@ -12,25 +12,56 @@
         </a>
     </div>
 
-    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-        @foreach (var job in Model)
-        {
-            <div class="col">
-                <div class="card h-100 shadow-sm">
-                    <div class="card-body">
-                        <h5 class="card-title">@job.Title</h5>
-                        <h6 class="card-subtitle mb-2 text-muted">@job.Location</h6>
-                        <p class="card-text">@job.Description</p>
-                        <div class="d-flex justify-content-between align-items-center">
-                            <span class="badge bg-primary">@job.CategoryName</span>
-                            <a asp-action="Details" asp-route-id="@job.Id" class="btn btn-sm btn-outline-primary">View Details</a>
+    @if (Model != null && Model.Items.Any())
+    {
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+            @foreach (var job in Model.Items)
+            {
+                <div class="col">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title">@job.Title</h5>
+                            <h6 class="card-subtitle mb-2 text-muted">@job.Location</h6>
+                            <p class="card-text">@job.Description</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="badge bg-primary">@job.CategoryName</span>
+                                <a asp-action="Details" asp-route-id="@job.Id" class="btn btn-sm btn-outline-primary">View Details</a>
+                            </div>
+                        </div>
+                        <div class="card-footer bg-transparent">
+                            <small class="text-muted">Posted on @job.CreatedDate.ToString("d")</small>
                         </div>
                     </div>
-                    <div class="card-footer bg-transparent">
-                        <small class="text-muted">Posted on @job.CreatedDate.ToString("d")</small>
-                    </div>
                 </div>
-            </div>
-        }
-    </div>
+            }
+        </div>
+
+        <nav aria-label="Job Postings Navigation" class="mt-4">
+            <ul class="pagination justify-content-center">
+                <li class="page-item @(Model.HasPreviousPage ? "" : "disabled")">
+                    <a class="page-link" asp-action="Index" asp-route-pageNumber="@(Model.PageNumber - 1)">Previous</a>
+                </li>
+
+                @for (int i = 1; i <= Model.TotalPages; i++)
+                {
+                    <li class="page-item @(i == Model.PageNumber ? "active" : "")">
+                        <a class="page-link" asp-action="Index" asp-route-pageNumber="@i">@i</a>
+                    </li>
+                }
+
+                <li class="page-item @(Model.HasNextPage ? "" : "disabled")">
+                    <a class="page-link" asp-action="Index" asp-route-pageNumber="@(Model.PageNumber + 1)">Next</a>
+                </li>
+            </ul>
+        </nav>
+        <div class="text-center text-muted mt-2">
+            Page @Model.PageNumber of @Model.TotalPages (Total @Model.TotalCount jobs)
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-info text-center" role="alert">
+            No job postings found.
+        </div>
+    }
 </div>

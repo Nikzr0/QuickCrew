@@ -10,7 +10,11 @@ namespace QuickCrew.Extensions
         public MappingProfile()
         {
             // Entity → DTO
-            CreateMap<JobPosting, JobPostingDto>();
+            //CreateMap<JobPosting, JobPostingDto>();
+            CreateMap<JobPosting, JobPostingDto>()
+                .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.Category.Name))
+                .ForMember(dest => dest.Location, opt => opt.MapFrom(src => $"{src.Location.Address}, {src.Location.City}, {src.Location.State} {src.Location.ZipCode}"))
+                .ForMember(dest => dest.CreatedDate, opt => opt.MapFrom(src => src.CreatedDate));
 
             CreateMap<JobPostingDto, JobPosting>()
                 .ForMember(dest => dest.Category, opt => opt.Ignore())
@@ -43,7 +47,7 @@ namespace QuickCrew.Extensions
             CreateMap<ReviewDto, Review>()
                 .ForMember(dest => dest.Reviewer, opt => opt.Ignore())
                 .ForMember(dest => dest.JobPosting, opt => opt.Ignore())
-                .ForMember(dest => dest.ReviewedAt, opt => opt.Ignore()); // Задава се автоматично
+                .ForMember(dest => dest.ReviewedAt, opt => opt.Ignore());
         }
     }
 }

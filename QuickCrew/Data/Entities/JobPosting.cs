@@ -26,5 +26,7 @@ namespace QuickCrew.Data.Entities
 
         [JsonIgnore]
         public User? Owner { get; set; }
+
+        public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
     }
 }

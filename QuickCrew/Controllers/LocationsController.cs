@@ -20,7 +20,6 @@ namespace QuickCrew.Controllers
             _mapper = mapper;
         }
 
-        // GET: Всички местоположения
         [HttpGet]
         public async Task<ActionResult<IEnumerable<LocationDto>>> GetLocations()
         {
@@ -28,7 +27,6 @@ namespace QuickCrew.Controllers
             return Ok(_mapper.Map<List<LocationDto>>(locations));
         }
 
-        // GET: Конкретно местоположение по ID
         [HttpGet("{id}")]
         public async Task<ActionResult<LocationDto>> GetLocation(int id)
         {
@@ -37,7 +35,6 @@ namespace QuickCrew.Controllers
             return Ok(_mapper.Map<LocationDto>(location));
         }
 
-        // PUT: Актуализиране на местоположение
         [HttpPut("{id}")]
         public async Task<IActionResult> PutLocation(int id, LocationDto dto)
         {
@@ -59,7 +56,6 @@ namespace QuickCrew.Controllers
             return NoContent();
         }
 
-        // POST: Създаване на ново местоположение
         [HttpPost]
         public async Task<ActionResult<LocationDto>> PostLocation(LocationDto dto)
         {
@@ -73,14 +69,12 @@ namespace QuickCrew.Controllers
                 _mapper.Map<LocationDto>(location));
         }
 
-        // DELETE: Изтриване на местоположение
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteLocation(int id)
         {
             var location = await _context.Locations.FindAsync(id);
             if (location == null) return NotFound();
 
-            // Проверка дали има свързани обяви
             var hasJobs = await _context.JobPostings
                 .AnyAsync(j => j.LocationId == id);
 

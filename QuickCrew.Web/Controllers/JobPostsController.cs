@@ -20,20 +20,26 @@ namespace QuickCrew.Web.Controllers
             _logger = logger;
         }
 
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(int pageNumber = 1, int pageSize = 9)
         {
             try
             {
-                var jobs = await _httpClient.GetFromJsonAsync<List<JobPostingDto>>("api/job-postings");
-                return View(jobs ?? new List<JobPostingDto>());
+                var apiUrl = $"api/job-postings?pageNumber={pageNumber}&pageSize={pageSize}";
+                var pagedJobs = await _httpClient.GetFromJsonAsync<PagedResult<JobPostingDto>>(apiUrl);
+
+                if (pagedJobs == null)
+                {
+                    pagedJobs = new PagedResult<JobPostingDto>();
+                }
+
+                return View(pagedJobs);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error loading job postings for JobPostsController Index.");
-                return View(new List<JobPostingDto>());
+                _logger.LogError(ex, "Error loading paged job postings for JobPostsController Index.");
+                return View(new PagedResult<JobPostingDto>());
             }
         }
-
         public async Task<IActionResult> Details(int id)
         {
             try
@@ -52,7 +58,6 @@ namespace QuickCrew.Web.Controllers
                 return NotFound();
             }
         }
-
         //[HttpGet]
         //public IActionResult Create()
         //{
