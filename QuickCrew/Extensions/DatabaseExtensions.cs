@@ -1,4 +1,5 @@
-﻿using QuickCrew.Data;
+﻿using Microsoft.EntityFrameworkCore;
+using QuickCrew.Data;
 using QuickCrew.Data.Seeding;
 
 namespace QuickCrew.Extensions
@@ -13,13 +14,13 @@ namespace QuickCrew.Extensions
 
 
             //context.Database.EnsureDeleted();
-            context.Database.EnsureCreated();
+            //context.Database.EnsureCreated();
+
+            context.Database.Migrate();
 
             // Seeding
             var initializeSeeder = new DbContextSeeder();
             initializeSeeder.Execute(context, scope.ServiceProvider).GetAwaiter().GetResult();
-
-            //context.Database.Migrate();
         }
     }
 }

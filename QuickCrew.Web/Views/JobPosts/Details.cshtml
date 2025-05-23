@@ -13,13 +13,14 @@
             <div class="row mb-3">
                 <div class="col-md-6">
                     <h5 class="text-muted">Location</h5>
-@*                     <p>@Model.Location</p>
- *@                </div>
+                    <p>@Model.Location</p>
+                </div>
                 <div class="col-md-6">
                     <h5 class="text-muted">Category</h5>
-@*                     <span class="badge bg-primary">@Model.Category</span>
- *@                </div>
+                    <span class="badge bg-primary">@Model.CategoryName</span>
+                </div>
             </div>
+
 
             <h5 class="text-muted">Description</h5>
             <div class="p-3 bg-light rounded mb-3">
@@ -36,7 +37,7 @@
             </div>
         </div>
         <div class="card-footer text-muted">
-@*             Posted on @Model.CreatedDate.ToString("MMMM dd, yyyy")
- *@        </div>
+            Posted on @Model.CreatedDate.ToString("MMMM dd, yyyy")
+        </div>
     </div>
 </div>

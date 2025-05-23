@@ -1,9 +1,10 @@
 ﻿using AutoMapper;
-using QuickCrew.Shared.Models; // Добавете този using за DTOs
+using QuickCrew.Shared.Models;
 using Microsoft.EntityFrameworkCore;
 using QuickCrew.Data;
 using QuickCrew.Data.Entities;
 using Microsoft.AspNetCore.Mvc;
+
 
 [Route("api/[controller]")]
 [ApiController]
@@ -18,19 +19,25 @@ public class JobPostingsController : ControllerBase
         _mapper = mapper;
     }
 
-    // GET: api/JobPostings
+    // GET: api/job-postings
     [HttpGet]
     public async Task<ActionResult<IEnumerable<JobPostingDto>>> GetJobPostings()
     {
-        var entities = await _context.JobPostings.ToListAsync();
+        var entities = await _context.JobPostings
+            .Include(j => j.Category)
+            .Include(j => j.Location)
+            .ToListAsync();
         return _mapper.Map<List<JobPostingDto>>(entities);
     }
 
-    // GET: api/JobPostings/5
+    // GET: api/job-postings/5
     [HttpGet("{id}")]
     public async Task<ActionResult<JobPostingDto>> GetJobPosting(int id)
     {
-        var jobPosting = await _context.JobPostings.FindAsync(id);
+        var jobPosting = await _context.JobPostings
+            .Include(j => j.Category)
+            .Include(j => j.Location)
+            .FirstOrDefaultAsync(j => j.Id == id);
 
         if (jobPosting == null)
         {
@@ -40,7 +47,7 @@ public class JobPostingsController : ControllerBase
         return _mapper.Map<JobPostingDto>(jobPosting);
     }
 
-    // PUT: api/JobPostings/5
+    // PUT: api/job-postings/5
     [HttpPut("{id}")]
     public async Task<IActionResult> PutJobPosting(int id, JobPostingDto dto)
     {
@@ -71,7 +78,7 @@ public class JobPostingsController : ControllerBase
         return NoContent();
     }
 
-    // POST: api/JobPostings
+    // POST: api/job-postings
     [HttpPost]
     public async Task<ActionResult<JobPostingDto>> PostJobPosting(JobPostingDto dto)
     {
@@ -83,7 +90,7 @@ public class JobPostingsController : ControllerBase
         return CreatedAtAction("GetJobPosting", new { id = resultDto.Id }, resultDto);
     }
 
-    // DELETE: api/JobPostings/5
+    // DELETE: api/job-postings/5
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteJobPosting(int id)
     {

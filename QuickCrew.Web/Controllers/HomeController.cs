@@ -24,7 +24,7 @@ namespace QuickCrew.Web.Controllers
             try
             {
                 // Fetch stats from API
-                var jobs = await _httpClient.GetFromJsonAsync<List<JobPostingDto>>("api/JobPostings");
+                var jobs = await _httpClient.GetFromJsonAsync<List<JobPostingDto>>("api/job-postings");
                 var stats = await _httpClient.GetFromJsonAsync<PlatformStatsDto>("api/Stats");
 
                 ViewBag.ActiveJobs = jobs?.Count ?? 0;
@@ -37,7 +37,6 @@ namespace QuickCrew.Web.Controllers
             {
                 _logger.LogError(ex, "Error loading dashboard data");
 
-                // Fallback values if API is unavailable
                 ViewBag.ActiveJobs = 0;
                 ViewBag.RegisteredUsers = 0;
                 ViewBag.ActiveProjects = 0;
@@ -75,7 +74,7 @@ namespace QuickCrew.Web.Controllers
         {
             try
             {
-                var jobs = await _httpClient.GetFromJsonAsync<List<JobPostingDto>>("api/JobPostings");
+                var jobs = await _httpClient.GetFromJsonAsync<List<JobPostingDto>>("api/job-postings");
                 return View(jobs ?? new List<JobPostingDto>());
             }
             catch (Exception ex)

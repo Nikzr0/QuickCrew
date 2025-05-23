@@ -29,8 +29,11 @@ builder.Services.AddCors(options =>
 });
 
 // Database configuration
+//builder.Services.AddDbContext<QuickCrewContext>(options =>
+//    options.UseSqlServer("Server=.;Database=QuickCrew;Trusted_Connection=True;MultipleActiveResultSets=true;TrustServerCertificate=True"));
+
 builder.Services.AddDbContext<QuickCrewContext>(options =>
-    options.UseSqlServer("Server=.;Database=QuickCrew;Trusted_Connection=True;MultipleActiveResultSets=true;TrustServerCertificate=True"));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnectionAPI")));
 
 // Authentication/Authorization
 builder.Services.AddAuthorization();

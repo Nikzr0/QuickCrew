@@ -1,4 +1,7 @@
 ﻿using System.Net.Http.Headers;
+using AutoMapper;
+using Microsoft.EntityFrameworkCore;
+//using QuickCrew.Data;
 
 namespace QuickCrew.Web
 {
@@ -8,7 +11,6 @@ namespace QuickCrew.Web
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // Добавяне на HttpClient - "QuickCrewAPI"
             builder.Services.AddHttpClient("QuickCrewAPI", client =>
             {
                 client.BaseAddress = new Uri("https://localhost:7224");
@@ -18,6 +20,8 @@ namespace QuickCrew.Web
             // Add services to the container.
             builder.Services.AddControllersWithViews();
             builder.Services.AddHttpClient<ApiService>();
+            builder.Services.AddAutoMapper(typeof(Program));
+
 
             var app = builder.Build();
 

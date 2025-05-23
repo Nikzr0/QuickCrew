@@ -8,5 +8,9 @@
         public int SlotsNeeded { get; set; }
         public int LocationId { get; set; }
         public int CategoryId { get; set; }
+
+        public string CategoryName { get; set; }
+        public string Location { get; set; }
+        public DateTime CreatedDate { get; set; }
     }
 }
