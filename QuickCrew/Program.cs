@@ -20,6 +20,14 @@ builder.Services.AddControllersWithViews(options =>
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerDocumentation();
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowWebApp",
+        builder => builder.WithOrigins("https://localhost:7129") // MVC port
+            .AllowAnyMethod()
+            .AllowAnyHeader());
+});
+
 // Database configuration
 builder.Services.AddDbContext<QuickCrewContext>(options =>
     options.UseSqlServer("Server=.;Database=QuickCrew;Trusted_Connection=True;MultipleActiveResultSets=true;TrustServerCertificate=True"));
@@ -62,6 +70,8 @@ app.UseRouting();
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.UseCors("AllowWebApp");
 
 // API Endpoints
 app.MapGroup("api/auth")
