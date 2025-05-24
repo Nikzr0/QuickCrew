@@ -4,124 +4,14 @@
     ViewData["Title"] = "Explore Job Opportunities";
 }
 
-<style>
-    /* Overall card styling */
-    .job-listing-card {
-        transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-        border: none;
-        border-radius: 0.75rem;
-        overflow: hidden;
-        background-color: #ffffff;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
-    }
-
-        .job-listing-card:hover {
-            transform: translateY(-7px);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-        }
-
-        /* Header section of the card */
-        .job-listing-card .card-header {
-            background-color: #f8f9fa;
-            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-            padding: 1rem 1.25rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-        }
-
-            .job-listing-card .card-header .job-title {
-                font-size: 1.3rem;
-                font-weight: 600;
-                color: #007bff;
-                margin-bottom: 0.2rem;
-            }
-
-            .job-listing-card .card-header .job-location {
-                font-size: 0.9rem;
-                color: #6c757d;
-            }
-
-        /* Body section of the card */
-        .job-listing-card .card-body {
-            padding: 1.25rem;
-            display: flex;
-            flex-direction: column;
-        }
-
-        /* Removed height and line-clamp from CSS for character-based truncation */
-        .job-listing-card .job-description {
-            font-size: 0.95rem;
-            color: #495057;
-            margin-bottom: 1rem;
-            /* Ensure consistent height even with short descriptions */
-            min-height: 40px; /* Adjust this value as needed to fit two lines of your font size */
-        }
-
-        .job-listing-card .job-meta {
-            font-size: 0.875rem;
-            color: #343a40;
-            margin-bottom: 0.5rem;
-        }
-
-            .job-listing-card .job-meta i {
-                color: #007bff;
-                margin-right: 0.5rem;
-            }
-
-        /* Footer section of the card */
-        .job-listing-card .card-footer {
-            padding: 1rem 1.25rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background-color: #f8f9fa;
-        }
-
-            .job-listing-card .card-footer .btn {
-                font-size: 0.9rem;
-                padding: 0.4rem 0.8rem;
-            }
-
-            .job-listing-card .card-footer .btn-details {
-                background-color: #007bff;
-                border-color: #007bff;
-                color: #ffffff;
-            }
-
-                .job-listing-card .card-footer .btn-details:hover {
-                    background-color: #0056b3;
-                    border-color: #0056b3;
-                }
-
-            .job-listing-card .card-footer .btn-edit {
-                background-color: #ffc107;
-                border-color: #ffc107;
-                color: #212529;
-            }
-
-                .job-listing-card .card-footer .btn-edit:hover {
-                    background-color: #e0a800;
-                    border-color: #e0a800;
-                }
-
-            .job-listing-card .card-footer .btn-delete {
-                background-color: #dc3545;
-                border-color: #dc3545;
-                color: #ffffff;
-            }
-
-                .job-listing-card .card-footer .btn-delete:hover {
-                    background-color: #c82333;
-                    border-color: #c82333;
-                }
-</style>
+<link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+<link rel="stylesheet" href="~/css/joblistings.css" asp-append-version="true" />
 
 <div class="container py-5">
     <div class="row align-items-center mb-5">
         <div class="col-md-8">
             <h1 class="display-4 fw-light text-primary">Discover Your Next Opportunity</h1>
-            <p class="lead text-muted">Browse through a curated list of job postings tailored for your skills and career growth.</p>
+            <p class="lead text-muted">Find short-term jobs near you—flexible work that fits your schedule.</p>
         </div>
         <div class="col-md-4 text-md-end">
             <a asp-action="Create" class="btn btn-primary btn-lg shadow-sm">
