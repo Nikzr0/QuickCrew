@@ -9,11 +9,11 @@ using QuickCrew.Data;
 
 #nullable disable
 
-namespace QuickCrew.Data.Migrations
+namespace QuickCrew.Migrations
 {
     [DbContext(typeof(QuickCrewContext))]
-    [Migration("20250523203842_AddCreatedDateToJobPosting")]
-    partial class AddCreatedDateToJobPosting
+    [Migration("20250524195110_InitialCreationForAllTables")]
+    partial class InitialCreationForAllTables
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

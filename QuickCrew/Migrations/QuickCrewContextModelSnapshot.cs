@@ -8,7 +8,7 @@ using QuickCrew.Data;
 
 #nullable disable
 
-namespace QuickCrew.Data.Migrations
+namespace QuickCrew.Migrations
 {
     [DbContext(typeof(QuickCrewContext))]
     partial class QuickCrewContextModelSnapshot : ModelSnapshot
