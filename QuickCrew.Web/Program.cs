@@ -1,7 +1,8 @@
-﻿using System.Net.Http.Headers;
+using System.Net.Http.Headers;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
-//using QuickCrew.Data;
+using Microsoft.AspNetCore.Identity;
+using QuickCrew.Data;
 
 namespace QuickCrew.Web
 {
@@ -10,6 +11,11 @@ namespace QuickCrew.Web
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+            var connectionString = builder.Configuration.GetConnectionString("QuickCrewContextConnection") ?? throw new InvalidOperationException("Connection string 'QuickCrewContextConnection' not found.");
+
+            builder.Services.AddDbContext<QuickCrewContext>(options => options.UseSqlServer(connectionString));
+
+            builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true).AddEntityFrameworkStores<QuickCrewContext>();
 
             builder.Services.AddHttpClient("QuickCrewAPI", client =>
             {
@@ -37,7 +43,9 @@ namespace QuickCrew.Web
 
             app.UseRouting();
 
+            app.UseAuthentication();
             app.UseAuthorization();
+            app.MapRazorPages();
 
             app.MapControllerRoute(
                 name: "default",
