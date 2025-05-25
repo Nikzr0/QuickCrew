@@ -17,7 +17,7 @@ namespace QuickCrew.Web
 
             builder.Services.AddDbContext<QuickCrewContext>(options => options.UseSqlServer(connectionString));
 
-            builder.Services.AddDefaultIdentity<User>(options => options.SignIn.RequireConfirmedAccount = true)
+            builder.Services.AddDefaultIdentity<User>(options => options.SignIn.RequireConfirmedAccount = false)
                 .AddRoles<IdentityRole>()
                 .AddEntityFrameworkStores<QuickCrewContext>();
 
