@@ -121,5 +121,30 @@ namespace QuickCrew.Web.Controllers
                 return View(newJob);
             }
         }
+
+        //[HttpPost]
+        //[Authorize]
+        //[ValidateAntiForgeryToken]
+        //public async Task<IActionResult> Create(JobPostingDto newJob)
+        //{
+        //    if (!ModelState.IsValid)
+        //    {
+        //        return View(newJob);
+        //    }
+
+        //    try
+        //    {
+        //        var response = await _httpClient.PostAsJsonAsync("api/job-postings", newJob);
+        //        response.EnsureSuccessStatusCode();
+
+        //        return RedirectToAction(nameof(MyJobs));
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger.LogError(ex, "Error creating new job posting.");
+        //        ModelState.AddModelError("", "Could not create job posting. Please try again.");
+        //        return View(newJob);
+        //    }
+        //}
     }
 }
