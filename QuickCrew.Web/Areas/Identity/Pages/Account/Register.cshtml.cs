@@ -3,7 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using QuickCrew.Data.Entities; // Увери се, че този using е наличен
+using QuickCrew.Data.Entities;
 using System.Linq;
 using System.Text;
 using System.Text.Encodings.Web;
@@ -53,10 +53,9 @@ namespace QuickCrew.Web.Areas.Identity.Pages.Account
 
         public class InputModel
         {
-            // ДОБАВИ ТОВА ПОЛЕ:
-            [Required] // Ако искаш да е задължително
-            [StringLength(100, ErrorMessage = "The {0} must be at least {2} and at max {1} characters long.", MinimumLength = 2)] // Пример за валидация
-            [Display(Name = "Full Name")] // Можеш да промениш Display Name
+            [Required]
+            [StringLength(100, ErrorMessage = "The {0} must be at least {2} and at max {1} characters long.", MinimumLength = 2)]
+            [Display(Name = "Full Name")]
             public string Name { get; set; }
 
 
@@ -89,12 +88,13 @@ namespace QuickCrew.Web.Areas.Identity.Pages.Account
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
             if (ModelState.IsValid)
             {
-                var user = CreateUser();
+                var user = new User
+                {
+                    UserName = Input.Email,
+                    Email = Input.Email,
+                    Name = Input.Name
+                };
 
-                user.Name = Input.Name;
-
-                await _userStore.SetUserNameAsync(user, Input.Email, CancellationToken.None);
-                await _emailStore.SetEmailAsync(user, Input.Email, CancellationToken.None);
                 var result = await _userManager.CreateAsync(user, Input.Password);
 
                 if (result.Succeeded)
@@ -132,19 +132,19 @@ namespace QuickCrew.Web.Areas.Identity.Pages.Account
             return Page();
         }
 
-        private User CreateUser()
-        {
-            try
-            {
-                return Activator.CreateInstance<User>();
-            }
-            catch
-            {
-                throw new InvalidOperationException($"Can't create an instance of '{nameof(User)}'. " +
-                    $"Ensure that '{nameof(User)}' is not an abstract class and has a parameterless constructor, or alternatively " +
-                    $"override the register page in /Areas/Identity/Pages/Account/Register.cshtml");
-            }
-        }
+        //private User CreateUser()
+        //{
+        //    try
+        //    {
+        //        return Activator.CreateInstance<User>();
+        //    }
+        //    catch
+        //    {
+        //        throw new InvalidOperationException($"Can't create an instance of '{nameof(User)}'. " +
+        //            $"Ensure that '{nameof(User)}' is not an abstract class and has a parameterless constructor, or alternatively " +
+        //            $"override the register page in /Areas/Identity/Pages/Account/Register.cshtml");
+        //    }
+        //}
 
         private IUserEmailStore<User> GetEmailStore()
         {
