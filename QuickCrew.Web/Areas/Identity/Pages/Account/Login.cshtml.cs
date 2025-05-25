@@ -13,6 +13,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
 using QuickCrew.Data.Entities;
+using System.Net.Http.Json;
+using System.Text.Json;
+using Microsoft.Extensions.Configuration;
 
 namespace QuickCrew.Web.Areas.Identity.Pages.Account
 {
@@ -21,12 +24,20 @@ namespace QuickCrew.Web.Areas.Identity.Pages.Account
         private readonly SignInManager<User> _signInManager;
         private readonly UserManager<User> _userManager;
         private readonly ILogger<LoginModel> _logger;
+        private readonly IHttpClientFactory _httpClientFactory;
+        private readonly IConfiguration _configuration;
 
-        public LoginModel(SignInManager<User> signInManager, ILogger<LoginModel> logger, UserManager<User> userManager)
+        public LoginModel(SignInManager<User> signInManager,
+             UserManager<User> userManager,
+             ILogger<LoginModel> logger,
+             IHttpClientFactory httpClientFactory,
+             IConfiguration configuration)
         {
             _signInManager = signInManager;
-            _logger = logger;
             _userManager = userManager;
+            _logger = logger;
+            _httpClientFactory = httpClientFactory;
+            _configuration = configuration;
         }
 
         [BindProperty]
@@ -89,6 +100,45 @@ namespace QuickCrew.Web.Areas.Identity.Pages.Account
                 if (result.Succeeded)
                 {
                     _logger.LogInformation("User logged in.");
+
+                    try
+                    {
+                        var client = _httpClientFactory.CreateClient();
+                        client.BaseAddress = new Uri(_configuration["ApiBaseUrl"]);
+
+                        var tokenRequest = new { email = Input.Email, password = Input.Password };
+                        var tokenEndpointUrl = "api/auth/login";
+
+                        _logger.LogInformation($"Attempting to get JWT from API at {client.BaseAddress}{tokenEndpointUrl}");
+                        var tokenResponse = await client.PostAsJsonAsync(tokenEndpointUrl, tokenRequest);
+
+                        if (!tokenResponse.IsSuccessStatusCode)
+                        {
+                            var errorContent = await tokenResponse.Content.ReadAsStringAsync();
+                            _logger.LogError($"API Token Request failed with status {tokenResponse.StatusCode}: {errorContent}");
+                            ModelState.AddModelError(string.Empty, $"Failed to get API token: {tokenResponse.ReasonPhrase}. Details: {errorContent}");
+                        }
+                        else
+                        {
+                            var tokenContent = await tokenResponse.Content.ReadFromJsonAsync<Dictionary<string, string>>();
+                            if (tokenContent != null && tokenContent.TryGetValue("accessToken", out var accessToken) && !string.IsNullOrEmpty(accessToken))
+                            {
+                                HttpContext.Session.SetString("JWToken", accessToken);
+                                _logger.LogInformation("JWT Access Token obtained and stored in session.");
+                            }
+                            else
+                            {
+                                _logger.LogWarning("API login successful, but no accessToken received or empty.");
+                                ModelState.AddModelError(string.Empty, "Could not retrieve API token after successful API login.");
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Failed to get JWT access token from Identity API for user {Email}", Input.Email);
+                        ModelState.AddModelError(string.Empty, "Failed to connect to API for token. Check API server status.");
+                    }
+
                     return LocalRedirect(returnUrl);
                 }
                 if (result.RequiresTwoFactor)
@@ -114,7 +164,6 @@ namespace QuickCrew.Web.Areas.Identity.Pages.Account
                     return Page();
                 }
             }
-
             return Page();
         }
     }

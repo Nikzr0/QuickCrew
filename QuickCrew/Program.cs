@@ -8,10 +8,8 @@ using QuickCrew.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
-// Configure both API controllers and MVC views support
 builder.Services.AddControllersWithViews(options =>
 {
     options.Conventions.Add(new RouteTokenTransformerConvention(new SlugifyParameterTransformer()));
@@ -23,24 +21,18 @@ builder.Services.AddSwaggerDocumentation();
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowWebApp",
-        builder => builder.WithOrigins("https://localhost:7129") // MVC port
+        builder => builder.WithOrigins("https://localhost:7039")
             .AllowAnyMethod()
             .AllowAnyHeader());
 });
 
-// Database configuration
-//builder.Services.AddDbContext<QuickCrewContext>(options =>
-//    options.UseSqlServer("Server=.;Database=QuickCrew;Trusted_Connection=True;MultipleActiveResultSets=true;TrustServerCertificate=True"));
-
 builder.Services.AddDbContext<QuickCrewContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnectionAPI")));
 
-// Authentication/Authorization
 builder.Services.AddAuthorization();
 builder.Services.AddAuthentication(IdentityConstants.BearerScheme)
     .AddBearerToken(IdentityConstants.BearerScheme);
 
-// Identity configuration
 builder.Services.AddIdentityCore<User>(options =>
 {
     options.Password.RequireDigit = false;
@@ -57,7 +49,6 @@ builder.Services.AddIdentityCore<User>(options =>
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -67,7 +58,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-app.UseStaticFiles(); // Required for MVC
+app.UseStaticFiles();
 
 app.UseRouting();
 
@@ -76,17 +67,14 @@ app.UseAuthorization();
 
 app.UseCors("AllowWebApp");
 
-// API Endpoints
 app.MapGroup("api/auth")
    .WithTags("Auth")
    .MapCustomIdentityApi();
 
-// MVC Routes
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
-// API Controllers
 app.MapControllers();
 
 app.Run();

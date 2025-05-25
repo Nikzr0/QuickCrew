@@ -1,6 +1,8 @@
 ﻿@using Microsoft.AspNetCore.Identity
 @using QuickCrew.Data.Entities
 
+@inject SignInManager<User> SignInManager
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -39,7 +41,7 @@
                             <a class="nav-link text-dark" asp-area="" asp-controller="JobPosts" asp-action="Index">Job Posts</a>
                         </li>
 
-                        @if (User.Identity.IsAuthenticated)
+                        @if (SignInManager.IsSignedIn(User))
                         {
                             <li class="nav-item">
                                 <a class="nav-link text-dark" asp-area="" asp-controller="JobPosts" asp-action="MyJobs">My Jobs</a>
