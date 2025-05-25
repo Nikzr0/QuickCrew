@@ -1,8 +1,10 @@
+using System;
 using System.Net.Http.Headers;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using QuickCrew.Data;
+using QuickCrew.Data.Entities;
 
 namespace QuickCrew.Web
 {
@@ -15,7 +17,9 @@ namespace QuickCrew.Web
 
             builder.Services.AddDbContext<QuickCrewContext>(options => options.UseSqlServer(connectionString));
 
-            builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true).AddEntityFrameworkStores<QuickCrewContext>();
+            builder.Services.AddDefaultIdentity<User>(options => options.SignIn.RequireConfirmedAccount = true)
+                .AddRoles<IdentityRole>()
+                .AddEntityFrameworkStores<QuickCrewContext>();
 
             builder.Services.AddHttpClient("QuickCrewAPI", client =>
             {
@@ -23,15 +27,12 @@ namespace QuickCrew.Web
                 client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             });
 
-            // Add services to the container.
             builder.Services.AddControllersWithViews();
             builder.Services.AddHttpClient<ApiService>();
             builder.Services.AddAutoMapper(typeof(Program));
 
-
             var app = builder.Build();
 
-            // Configure the HTTP request pipeline.
             if (!app.Environment.IsDevelopment())
             {
                 app.UseExceptionHandler("/Home/Error");
@@ -40,7 +41,6 @@ namespace QuickCrew.Web
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();
-
             app.UseRouting();
 
             app.UseAuthentication();

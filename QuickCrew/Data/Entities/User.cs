@@ -10,7 +10,7 @@ namespace QuickCrew.Data.Entities
 
         public User()
         {
-            this.Id = Guid.NewGuid().ToString();
+            //this.Id = Guid.NewGuid().ToString();
             this.Reviews = new HashSet<Review>();
         }
 

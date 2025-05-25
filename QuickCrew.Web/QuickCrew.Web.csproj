@@ -23,4 +23,8 @@
     <ProjectReference Include="..\QuickCrew\QuickCrew.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Areas\Identity\Data\" />
+  </ItemGroup>
+
 </Project>

@@ -34,7 +34,6 @@ namespace QuickCrew.Data
             base.OnModelCreating(modelBuilder);
             this.ChangeDefaultIdentityTableNames(modelBuilder);
 
-            // Disable cascade delete
             var entityTypes = modelBuilder.Model.GetEntityTypes().ToList();
 
             var foreignKeys = entityTypes
