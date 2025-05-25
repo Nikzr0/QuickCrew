@@ -4,7 +4,8 @@ using Microsoft.EntityFrameworkCore;
 using QuickCrew.Data;
 using QuickCrew.Data.Entities;
 using Microsoft.AspNetCore.Mvc;
-
+using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 
 [Route("api/[controller]")]
 [ApiController]
@@ -30,12 +31,12 @@ public class JobPostingsController : ControllerBase
         var totalCount = await _context.JobPostings.CountAsync();
 
         var jobPostings = await _context.JobPostings
-                                        .Include(j => j.Category)
-                                        .Include(j => j.Location)
-                                        .OrderByDescending(j => j.CreatedDate)
-                                        .Skip((pageNumber - 1) * pageSize)
-                                        .Take(pageSize)
-                                        .ToListAsync();
+                                         .Include(j => j.Category)
+                                         .Include(j => j.Location)
+                                         .OrderByDescending(j => j.CreatedDate)
+                                         .Skip((pageNumber - 1) * pageSize)
+                                         .Take(pageSize)
+                                         .ToListAsync();
 
         var jobPostingDtos = _mapper.Map<List<JobPostingDto>>(jobPostings);
 
@@ -67,17 +68,51 @@ public class JobPostingsController : ControllerBase
         return jobPostingDto;
     }
 
+    [HttpGet("my")]
+    [Authorize]
+    public async Task<ActionResult<IEnumerable<JobPostingDto>>> GetMyJobPostings()
+    {
+        var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        if (currentUserId == null)
+        {
+            return Unauthorized();
+        }
+
+        var myJobPostings = await _context.JobPostings
+                                        .Where(jp => jp.OwnerId == currentUserId)
+                                        .Include(jp => jp.Location)
+                                        .Include(jp => jp.Category)
+                                        .OrderByDescending(jp => jp.CreatedDate)
+                                        .ToListAsync();
+
+        var jobPostingDtos = _mapper.Map<List<JobPostingDto>>(myJobPostings);
+
+        return Ok(jobPostingDtos);
+    }
 
     // PUT: api/job-postings/5
     [HttpPut("{id}")]
+    [Authorize]
     public async Task<IActionResult> PutJobPosting(int id, JobPostingDto dto)
     {
+        var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var existingJobPosting = await _context.JobPostings.AsNoTracking().FirstOrDefaultAsync(jp => jp.Id == id);
+
+        if (existingJobPosting == null || existingJobPosting.OwnerId != currentUserId)
+        {
+            return Forbid();
+        }
+
         if (id != dto.Id)
         {
             return BadRequest();
         }
 
         var entity = _mapper.Map<JobPosting>(dto);
+        entity.OwnerId = currentUserId;
+        entity.CreatedDate = existingJobPosting.CreatedDate;
+
         _context.Entry(entity).State = EntityState.Modified;
 
         try
@@ -101,9 +136,20 @@ public class JobPostingsController : ControllerBase
 
     // POST: api/job-postings
     [HttpPost]
+    [Authorize]
     public async Task<ActionResult<JobPostingDto>> PostJobPosting(JobPostingDto dto)
     {
+        var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        if (currentUserId == null)
+        {
+            return Unauthorized();
+        }
+
         var entity = _mapper.Map<JobPosting>(dto);
+        entity.OwnerId = currentUserId;
+        entity.CreatedDate = DateTime.UtcNow;
+
         _context.JobPostings.Add(entity);
         await _context.SaveChangesAsync();
 
@@ -113,12 +159,19 @@ public class JobPostingsController : ControllerBase
 
     // DELETE: api/job-postings/5
     [HttpDelete("{id}")]
+    [Authorize]
     public async Task<IActionResult> DeleteJobPosting(int id)
     {
         var jobPosting = await _context.JobPostings.FindAsync(id);
         if (jobPosting == null)
         {
             return NotFound();
+        }
+
+        var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (jobPosting.OwnerId != currentUserId)
+        {
+            return Forbid();
         }
 
         _context.JobPostings.Remove(jobPosting);

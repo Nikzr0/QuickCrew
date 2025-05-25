@@ -1,0 +1,74 @@
+﻿@model IEnumerable<QuickCrew.Shared.Models.JobPostingDto>
+
+@{
+    ViewData["Title"] = "My Posted Jobs";
+}
+
+<h1>My Posted Jobs</h1>
+
+<p>
+    <a asp-action="Create" asp-controller="JobPosts">Create New Job Posting</a>
+</p>
+
+@if (Model == null || !Model.Any())
+{
+    <p>You haven't posted any jobs yet.</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>
+                    @Html.DisplayNameFor(model => model.FirstOrDefault().Title)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.FirstOrDefault().Description)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.FirstOrDefault().SlotsNeeded)
+                </th>
+                <th>
+                    Location
+                </th>
+                <th>
+                    Category
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.FirstOrDefault().CreatedDate)
+                </th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Title)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Description)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.SlotsNeeded)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Location)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Category.Name)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.CreatedDate)
+                    </td>
+                    <td>
+                        <a asp-action="Edit" asp-controller="JobPosts" asp-route-id="@item.Id">Edit</a> |
+                        <a asp-action="Details" asp-controller="JobPosts" asp-route-id="@item.Id">Details</a> |
+                        <a asp-action="Delete" asp-controller="JobPosts" asp-route-id="@item.Id">Delete</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

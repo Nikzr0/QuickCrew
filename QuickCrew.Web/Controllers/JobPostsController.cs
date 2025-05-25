@@ -4,6 +4,10 @@ using System.Net.Http;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using System.Net.Http.Json;
+using System;
+using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 
 namespace QuickCrew.Web.Controllers
 {
@@ -40,6 +44,7 @@ namespace QuickCrew.Web.Controllers
                 return View(new PagedResult<JobPostingDto>());
             }
         }
+
         public async Task<IActionResult> Details(int id)
         {
             try
@@ -58,27 +63,63 @@ namespace QuickCrew.Web.Controllers
                 return NotFound();
             }
         }
-        //[HttpGet]
-        //public IActionResult Create()
-        //{
-        //    return View();
-        //}
 
-        //[HttpPost]
-        //public async Task<IActionResult> Create(JobPostingDto newJob)
-        //{
-        //    try
-        //    {
-        //        var response = await _httpClient.PostAsJsonAsync("api/job-postings", newJob);
-        //        response.EnsureSuccessStatusCode(); // Throws if not 2xx
-        //        return RedirectToAction(nameof(Index));
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        _logger.LogError(ex, "Error creating new job posting.");
-        //        ModelState.AddModelError("", "Could not create job posting. Please try again.");
-        //        return View(newJob);
-        //    }
-        //}
+        [Authorize]
+        public async Task<IActionResult> MyJobs()
+        {
+            try
+            {
+                var myJobPostings = await _httpClient.GetFromJsonAsync<List<JobPostingDto>>("api/job-postings/my");
+
+                if (myJobPostings == null)
+                {
+                    myJobPostings = new List<JobPostingDto>();
+                }
+
+                return View(myJobPostings);
+            }
+            catch (HttpRequestException httpEx) when (httpEx.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            {
+                _logger.LogWarning("Unauthorized access to MyJobs. User not authenticated or token invalid.");
+                return RedirectToAction("Login", "Account", new { area = "Identity" });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error loading 'My Jobs' for JobPostsController.");
+                return View(new List<JobPostingDto>());
+            }
+        }
+
+        [HttpGet]
+        [Authorize]
+        public IActionResult Create()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        [Authorize]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create(JobPostingDto newJob)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(newJob);
+            }
+
+            try
+            {
+                var response = await _httpClient.PostAsJsonAsync("api/job-postings", newJob);
+                response.EnsureSuccessStatusCode();
+
+                return RedirectToAction(nameof(MyJobs));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error creating new job posting.");
+                ModelState.AddModelError("", "Could not create job posting. Please try again.");
+                return View(newJob);
+            }
+        }
     }
 }
