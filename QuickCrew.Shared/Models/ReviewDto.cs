@@ -8,19 +8,17 @@ namespace QuickCrew.Shared.Models
 
         [Required]
         [Range(1, 5)]
-        public int Rating { get; set; } // Рейтинг (1-5)
+        public int Rating { get; set; }
 
         [MaxLength(1000)]
-        public string Comment { get; set; } // Коментар
+        public string Comment { get; set; }
 
-        public DateTime ReviewedAt { get; set; } // Дата на ревюто
+        public DateTime ReviewedAt { get; set; }
 
-        // Връзки към други обекти (ID-та)
-        public string ReviewerId { get; set; } // ID на рецензента
-        public int JobPostingId { get; set; } // ID на обявата
+        public string ReviewerId { get; set; }
+        public int JobPostingId { get; set; }
 
-        // Допълнителна информация (не се записва в базата)
-        public string ReviewerName { get; set; } // Име на рецензента
-        public string JobTitle { get; set; } // Заглавие на обявата
+        public string ReviewerName { get; set; }
+        public string JobTitle { get; set; }
     }
 }

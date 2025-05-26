@@ -20,7 +20,6 @@ namespace QuickCrew.Controllers
             _mapper = mapper;
         }
 
-        // GET: Всички ревюта
         [HttpGet]
         public async Task<ActionResult<IEnumerable<ReviewDto>>> GetReviews()
         {
@@ -32,7 +31,6 @@ namespace QuickCrew.Controllers
             return Ok(_mapper.Map<List<ReviewDto>>(reviews));
         }
 
-        // GET: Конкретно ревю по ID
         [HttpGet("{id}")]
         public async Task<ActionResult<ReviewDto>> GetReview(int id)
         {
@@ -49,7 +47,6 @@ namespace QuickCrew.Controllers
             return Ok(_mapper.Map<ReviewDto>(review));
         }
 
-        // PUT: Актуализиране на ревю
         [HttpPut("{id}")]
         public async Task<IActionResult> PutReview(int id, ReviewDto dto)
         {
@@ -74,17 +71,15 @@ namespace QuickCrew.Controllers
             return NoContent();
         }
 
-        // POST: Създаване на ново ревю
         [HttpPost]
         public async Task<ActionResult<ReviewDto>> PostReview(ReviewDto dto)
         {
             var review = _mapper.Map<Review>(dto);
-            review.ReviewedAt = DateTime.UtcNow; // Задаване на текуща дата
+            review.ReviewedAt = DateTime.UtcNow;
 
             _context.Reviews.Add(review);
             await _context.SaveChangesAsync();
 
-            // Зареждане на пълните данни
             var newReview = await _context.Reviews
                 .Include(r => r.Reviewer)
                 .Include(r => r.JobPosting)
@@ -96,7 +91,6 @@ namespace QuickCrew.Controllers
                 _mapper.Map<ReviewDto>(newReview));
         }
 
-        // DELETE: Изтриване на ревю
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteReview(int id)
         {
