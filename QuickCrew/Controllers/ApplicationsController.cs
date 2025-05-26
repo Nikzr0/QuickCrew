@@ -82,12 +82,11 @@ namespace QuickCrew.Controllers
         public async Task<ActionResult<ApplicationDto>> PostApplication(ApplicationDto dto)
         {
             var application = _mapper.Map<Application>(dto);
-            application.AppliedAt = DateTime.UtcNow; // Set server-side timestamp
+            application.AppliedAt = DateTime.UtcNow;
 
             _context.Applications.Add(application);
             await _context.SaveChangesAsync();
 
-            // Reload with related data for full DTO mapping
             var newApplication = await _context.Applications
                 .Include(a => a.JobPosting)
                 .Include(a => a.User)
