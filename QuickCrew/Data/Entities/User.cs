@@ -1,6 +1,8 @@
 ﻿using System.Text.Json.Serialization;
-
 using Microsoft.AspNetCore.Identity;
+using System.Collections.Generic;
+using System.Linq;
+using System;
 
 namespace QuickCrew.Data.Entities
 {
@@ -10,8 +12,8 @@ namespace QuickCrew.Data.Entities
 
         public User()
         {
-            //this.Id = Guid.NewGuid().ToString();
             this.Reviews = new HashSet<Review>();
+            this.JobPostings = new HashSet<JobPosting>();
         }
 
         public string Name { get; set; } = null!;
@@ -22,5 +24,8 @@ namespace QuickCrew.Data.Entities
 
         [JsonIgnore]
         public IEnumerable<Review> Reviews { get; set; }
+
+        [JsonIgnore]
+        public ICollection<JobPosting> JobPostings { get; set; }
     }
 }

@@ -1,9 +1,7 @@
 ﻿using System.Data;
-
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-
 using QuickCrew.Data.Entities;
 
 namespace QuickCrew.Data
@@ -30,6 +28,12 @@ namespace QuickCrew.Data
             base.OnModelCreating(modelBuilder);
             this.ChangeDefaultIdentityTableNames(modelBuilder);
 
+            modelBuilder.Entity<JobPosting>()
+                .HasOne(jp => jp.Owner)
+                .WithMany(u => u.JobPostings)
+                .HasForeignKey(jp => jp.OwnerId)
+                .OnDelete(DeleteBehavior.Cascade);
+
             modelBuilder.Entity<Review>()
                 .Property(r => r.Id)
                 .ValueGeneratedOnAdd();
@@ -47,14 +51,17 @@ namespace QuickCrew.Data
                     .OnDelete(DeleteBehavior.Cascade);
             });
 
-            var entityTypes = modelBuilder.Model.GetEntityTypes().ToList();
+            modelBuilder.Entity<Application>()
+                .HasOne(a => a.JobPosting)
+                .WithMany()
+                .HasForeignKey(a => a.JobPostingId)
+                .OnDelete(DeleteBehavior.Cascade);
 
-            var foreignKeys = entityTypes
-                .SelectMany(e => e.GetForeignKeys().Where(f => f.DeleteBehavior == DeleteBehavior.Cascade));
-            foreach (var foreignKey in foreignKeys)
-            {
-                foreignKey.DeleteBehavior = DeleteBehavior.Restrict;
-            }
+            modelBuilder.Entity<Application>()
+                .HasOne(a => a.User)
+                .WithMany()
+                .HasForeignKey(a => a.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
 
         private void ChangeDefaultIdentityTableNames(ModelBuilder builder)

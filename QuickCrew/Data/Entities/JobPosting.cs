@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
-
 using QuickCrew.Data.Common.Models;
+using System.Collections.Generic;
 
 namespace QuickCrew.Data.Entities
 {
