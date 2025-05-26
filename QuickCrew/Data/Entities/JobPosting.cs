@@ -28,5 +28,7 @@ namespace QuickCrew.Data.Entities
         public User? Owner { get; set; }
 
         public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
+
+        public ICollection<Review> Reviews { get; set; } = new HashSet<Review>();
     }
 }

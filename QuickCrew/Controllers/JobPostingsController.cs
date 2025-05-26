@@ -6,7 +6,11 @@ using QuickCrew.Data.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
-using Microsoft.Extensions.Logging; // Add this using for ILogger
+using Microsoft.Extensions.Logging;
+using System.Linq;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using System;
 
 [Route("api/[controller]")]
 [ApiController]
@@ -36,6 +40,9 @@ public class JobPostingsController : ControllerBase
         var jobPostings = await _context.JobPostings
                                          .Include(j => j.Category)
                                          .Include(j => j.Location)
+                                         .Include(j => j.Owner)
+                                         .Include(j => j.Reviews)
+                                             .ThenInclude(r => r.Reviewer)
                                          .OrderByDescending(j => j.CreatedDate)
                                          .Skip((pageNumber - 1) * pageSize)
                                          .Take(pageSize)
@@ -60,6 +67,9 @@ public class JobPostingsController : ControllerBase
         var jobPosting = await _context.JobPostings
                                        .Include(j => j.Category)
                                        .Include(j => j.Location)
+                                       .Include(j => j.Owner)
+                                       .Include(j => j.Reviews)
+                                            .ThenInclude(r => r.Reviewer)
                                        .FirstOrDefaultAsync(j => j.Id == id);
 
         if (jobPosting == null)
@@ -86,6 +96,8 @@ public class JobPostingsController : ControllerBase
                                          .Where(jp => jp.OwnerId == currentUserId)
                                          .Include(jp => jp.Location)
                                          .Include(jp => jp.Category)
+                                         .Include(jp => jp.Reviews)
+                                            .ThenInclude(r => r.Reviewer)
                                          .OrderByDescending(jp => jp.CreatedDate)
                                          .ToListAsync();
 
@@ -94,7 +106,6 @@ public class JobPostingsController : ControllerBase
         return Ok(jobPostingDtos);
     }
 
-    // PUT: api/job-postings/5
     [HttpPut("{id}")]
     [Authorize]
     public async Task<IActionResult> PutJobPosting(int id, JobPostingDto dto)
@@ -142,7 +153,6 @@ public class JobPostingsController : ControllerBase
         return NoContent();
     }
 
-    // POST: api/job-postings
     [HttpPost]
     [Authorize]
     public async Task<ActionResult<JobPostingDto>> PostJobPosting(JobPostingDto dto)
@@ -164,7 +174,7 @@ public class JobPostingsController : ControllerBase
         {
             await _context.SaveChangesAsync();
         }
-        catch (Microsoft.EntityFrameworkCore.DbUpdateException ex)
+        catch (DbUpdateException ex)
         {
             _logger.LogError(ex, "DbUpdateException: Error saving new job posting to database.");
             if (ex.InnerException != null)
@@ -183,7 +193,6 @@ public class JobPostingsController : ControllerBase
         return CreatedAtAction("GetJobPosting", new { id = resultDto.Id }, resultDto);
     }
 
-    // DELETE: api/job-postings/5
     [HttpDelete("{id}")]
     [Authorize]
     public async Task<IActionResult> DeleteJobPosting(int id)

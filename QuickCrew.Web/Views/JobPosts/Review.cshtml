@@ -1,0 +1,137 @@
+﻿@model QuickCrew.Shared.Models.ReviewDto
+
+@{
+    ViewData["Title"] = "Leave a Review";
+}
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" />
+
+<div class="container py-5">
+    <div class="card shadow-lg p-4">
+        <div class="card-header bg-primary text-white text-center py-3">
+            <h1 class="mb-0">Leave a Review</h1>
+            <p class="mb-0">for Job Posting ID: @Model.JobPostingId</p>
+        </div>
+        <div class="card-body">
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    @TempData["ErrorMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
+
+            <form asp-action="Review" method="post">
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                <input type="hidden" asp-for="JobPostingId" />
+
+                <div class="mb-4">
+                    <label asp-for="Rating" class="form-label d-block">Rating</label>
+                    <div class="rating-input-stars" data-current-rating="@Model.Rating">
+                        @for (int i = 1; i <= 5; i++)
+                        {
+                            <i class="far fa-star star-icon @(i <= Model.Rating ? "fas" : "")" data-rating="@i"></i>
+                        }
+                    </div>
+                    <input type="hidden" asp-for="Rating" id="ratingInput" />
+                    <span asp-validation-for="Rating" class="text-danger d-block mt-1"></span>
+                </div>
+
+                <div class="mb-4">
+                    <label asp-for="Comment" class="form-label">Comment</label>
+                    <textarea asp-for="Comment" class="form-control" rows="5" placeholder="Share your experience..."></textarea>
+                    <span asp-validation-for="Comment" class="text-danger"></span>
+                </div>
+
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-success btn-lg">Submit Review</button>
+                    <a asp-action="Details" asp-route-id="@Model.JobPostingId" class="btn btn-outline-secondary btn-lg">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const starsContainer = document.querySelector('.rating-input-stars');
+            const ratingInput = document.getElementById('ratingInput');
+            let currentRating = parseInt(starsContainer.dataset.currentRating) || 0;
+
+            function updateStars(rating) {
+                starsContainer.querySelectorAll('.star-icon').forEach(star => {
+                    const starRating = parseInt(star.dataset.rating);
+                    if (starRating <= rating) {
+                        star.classList.add('fas');
+                        star.classList.remove('far');
+                    } else {
+                        star.classList.add('far');
+                        star.classList.remove('fas');
+                    }
+                });
+            }
+
+            updateStars(currentRating);
+            ratingInput.value = currentRating;
+
+            starsContainer.addEventListener('click', function (event) {
+                const clickedStar = event.target.closest('.star-icon');
+                if (clickedStar) {
+                    const rating = parseInt(clickedStar.dataset.rating);
+                    currentRating = rating;
+                    ratingInput.value = rating;
+                    updateStars(rating);
+                }
+            });
+
+            starsContainer.addEventListener('mouseover', function (event) {
+                const hoveredStar = event.target.closest('.star-icon');
+                if (hoveredStar) {
+                    const hoverRating = parseInt(hoveredStar.dataset.rating);
+                    starsContainer.querySelectorAll('.star-icon').forEach(star => {
+                        const starRating = parseInt(star.dataset.rating);
+                        if (starRating <= hoverRating) {
+                            star.classList.add('fas');
+                            star.classList.remove('far');
+                        } else {
+                            star.classList.add('far');
+                            star.classList.remove('fas');
+                        }
+                    });
+                }
+            });
+
+            starsContainer.addEventListener('mouseout', function () {
+                updateStars(currentRating);
+            });
+        });
+    </script>
+}
+
+@section Styles {
+    <style>
+        .rating-input-stars .star-icon {
+            font-size: 2rem;
+            cursor: pointer;
+            color: #ccc;
+        }
+
+            .rating-input-stars .star-icon.fas {
+                color: #ffc107;
+            }
+
+            .rating-input-stars .star-icon:hover {
+                color: #ffc107;
+            }
+
+                .rating-input-stars .star-icon:hover ~ .star-icon {
+                    color: #ccc;
+                }
+    </style>
+}

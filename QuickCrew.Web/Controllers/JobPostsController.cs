@@ -381,6 +381,117 @@ namespace QuickCrew.Web.Controllers
             }
         }
 
+        [HttpGet]
+        [Authorize]
+        public async Task<IActionResult> Review(int id)
+        {
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(currentUserId))
+            {
+                TempData["ErrorMessage"] = "You must be logged in to leave a review.";
+                return RedirectToAction("Login", "Account", new { area = "Identity" });
+            }
+
+            try
+            {
+                var checkReviewResponse = await _httpClient.GetAsync($"api/reviews/hasReviewed/{id}/{currentUserId}");
+
+                if (checkReviewResponse.IsSuccessStatusCode)
+                {
+                    var hasReviewed = await checkReviewResponse.Content.ReadFromJsonAsync<bool>();
+                    if (hasReviewed)
+                    {
+                        TempData["ErrorMessage"] = "You have already submitted a review for this job posting.";
+                        return RedirectToAction("Details", new { id = id });
+                    }
+                }
+                else if (checkReviewResponse.StatusCode == System.Net.HttpStatusCode.NotFound)
+                {
+                    _logger.LogWarning($"API reviews/hasReviewed/{id}/{currentUserId} returned 404, assuming no previous review or API issue.");
+                }
+                else
+                {
+                    var errorContent = await checkReviewResponse.Content.ReadAsStringAsync();
+                    _logger.LogError($"API Error checking review status: Status {checkReviewResponse.StatusCode}, Content: {errorContent}");
+                    TempData["ErrorMessage"] = "An error occurred while preparing the review form. Please try again.";
+                    return RedirectToAction("Details", new { id = id });
+                }
+
+                return View(new ReviewDto { JobPostingId = id });
+            }
+            catch (Exception ex)
+            {
+                //_logger.LogError(ex, $"Error loading review form for job posting ID: {id}");
+                TempData["ErrorMessage"] = "An unexpected error occurred while loading the review form.";
+                return RedirectToAction("Details", new { id = id });
+            }
+        }
+
+        [HttpPost]
+        [Authorize]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Review(ReviewDto reviewDto)
+        {
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(currentUserId))
+            {
+                TempData["ErrorMessage"] = "You must be logged in to leave a review.";
+                return RedirectToAction("Login", "Account", new { area = "Identity" });
+            }
+
+            reviewDto.ReviewerId = currentUserId;
+
+            if (!ModelState.IsValid)
+            {
+                TempData["ErrorMessage"] = "Please correct the errors in the review form.";
+                return View(reviewDto);
+            }
+
+            try
+            {
+                var token = HttpContext.Session.GetString("JWToken");
+                if (string.IsNullOrEmpty(token))
+                {
+                    TempData["ErrorMessage"] = "Your session has expired. Please log in again.";
+                    return RedirectToAction("Login", "Account", new { area = "Identity" });
+                }
+                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+                _logger.LogInformation("Attempting to submit ReviewDto to API: {@ReviewDto}", reviewDto);
+
+                var response = await _httpClient.PostAsJsonAsync("api/reviews", reviewDto);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    _logger.LogError("API Error submitting review: Status {StatusCode}, Content: {ErrorContent}", response.StatusCode, errorContent);
+                    ModelState.AddModelError(string.Empty, $"Failed to submit review: {errorContent}");
+                    TempData["ErrorMessage"] = $"Failed to submit review: {errorContent}";
+                    return View(reviewDto);
+                }
+
+                TempData["SuccessMessage"] = "Review submitted successfully!";
+                return RedirectToAction("Details", new { id = reviewDto.JobPostingId });
+            }
+            catch (HttpRequestException httpEx)
+            {
+                _logger.LogError(httpEx, "HttpRequestException during review submission.");
+                ModelState.AddModelError(string.Empty, $"Network error or API responded with an error. Details: {httpEx.Message}");
+                TempData["ErrorMessage"] = $"Network error or API responded with an error. Details: {httpEx.Message}";
+                return View(reviewDto);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An unexpected error occurred while submitting the review.");
+                ModelState.AddModelError(string.Empty, "An unexpected error occurred. Please try again.");
+                TempData["ErrorMessage"] = "An unexpected error occurred. Please try again.";
+                return View(reviewDto);
+            }
+            finally
+            {
+                _httpClient.DefaultRequestHeaders.Authorization = null;
+            }
+        }
         private async Task PopulateDropdowns()
         {
             try

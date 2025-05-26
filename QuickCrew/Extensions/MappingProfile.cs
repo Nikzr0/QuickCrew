@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using QuickCrew.Data.Entities;
 using QuickCrew.Shared.Models;
+using System.Linq;
 
 namespace QuickCrew.Extensions
 {
@@ -18,13 +19,17 @@ namespace QuickCrew.Extensions
 
             CreateMap<JobPosting, JobPostingDto>()
                 .ForMember(dest => dest.Location, opt => opt.MapFrom(src => src.Location))
-                .ForMember(dest => dest.Category, opt => opt.MapFrom(src => src.Category));
+                .ForMember(dest => dest.Category, opt => opt.MapFrom(src => src.Category))
+                .ForMember(dest => dest.OwnerName, opt => opt.MapFrom(src => src.Owner.Name))
+                .ForMember(dest => dest.Reviews, opt => opt.MapFrom(src => src.Reviews))
+                .ForMember(dest => dest.AverageRating, opt => opt.MapFrom(src => src.Reviews.Any() ? src.Reviews.Average(r => r.Rating) : 0.0));
 
             CreateMap<JobPostingDto, JobPosting>()
                 .ForMember(dest => dest.Category, opt => opt.Ignore())
                 .ForMember(dest => dest.Location, opt => opt.Ignore())
                 .ForMember(dest => dest.Owner, opt => opt.Ignore())
-                .ForMember(dest => dest.CreatedDate, opt => opt.Ignore());
+                .ForMember(dest => dest.CreatedDate, opt => opt.Ignore())
+                .ForMember(dest => dest.Reviews, opt => opt.Ignore());
 
             CreateMap<Application, ApplicationDto>()
                 .ForMember(dest => dest.JobTitle, opt => opt.MapFrom(src => src.JobPosting.Title))

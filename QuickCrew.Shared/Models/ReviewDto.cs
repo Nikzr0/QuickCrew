@@ -11,14 +11,13 @@ namespace QuickCrew.Shared.Models
         public int Rating { get; set; }
 
         [MaxLength(1000)]
-        public string Comment { get; set; }
+        public string? Comment { get; set; }
 
         public DateTime ReviewedAt { get; set; }
 
-        public string ReviewerId { get; set; }
+        public string? ReviewerId { get; set; }
         public int JobPostingId { get; set; }
-
-        public string ReviewerName { get; set; }
-        public string JobTitle { get; set; }
+        public string? ReviewerName { get; set; }
+        public string? JobTitle { get; set; }
     }
 }

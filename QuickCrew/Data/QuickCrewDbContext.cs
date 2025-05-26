@@ -15,13 +15,9 @@ namespace QuickCrew.Data
         }
 
         public DbSet<Application> Applications { get; set; }
-
         public DbSet<Category> Categories { get; set; }
-
         public DbSet<JobPosting> JobPostings { get; set; }
-
         public DbSet<Location> Locations { get; set; }
-
         public DbSet<Review> Reviews { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -33,6 +29,23 @@ namespace QuickCrew.Data
         {
             base.OnModelCreating(modelBuilder);
             this.ChangeDefaultIdentityTableNames(modelBuilder);
+
+            modelBuilder.Entity<Review>()
+                .Property(r => r.Id)
+                .ValueGeneratedOnAdd();
+
+            modelBuilder.Entity<Review>(entity =>
+            {
+                entity.HasOne(r => r.Reviewer)
+                    .WithMany(u => u.Reviews)
+                    .HasForeignKey(r => r.ReviewerId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(r => r.JobPosting)
+                    .WithMany(jp => jp.Reviews)
+                    .HasForeignKey(r => r.JobPostingId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
 
             var entityTypes = modelBuilder.Model.GetEntityTypes().ToList();
 
