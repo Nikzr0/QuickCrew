@@ -4,61 +4,71 @@
     ViewData["Title"] = "Create New Job Posting";
 }
 
-<h1 class="mb-4">@ViewData["Title"]</h1>
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <h1 class="text-center mb-4">Create New Job Posting</h1>
+            <h4 class="text-center text-muted mb-5">Job Posting Details</h4>
 
-<h4 class="mb-3">Job Posting Details</h4>
-<hr />
-<div class="row">
-    <div class="col-md-6">
-        <form asp-action="Create" asp-controller="JobPosts" method="post">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-
-            @if (!string.IsNullOrEmpty(ViewBag.ErrorMessage))
+            @if (TempData["SuccessMessage"] != null)
             {
-                <div class="alert alert-danger" role="alert">
-                    @ViewBag.ErrorMessage
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    @TempData["SuccessMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
             }
 
-            <div class="form-floating mb-3">
-                <label asp-for="Title"></label>
-                <input asp-for="Title" class="form-control" placeholder="Job Title" />
-                <span asp-validation-for="Title" class="text-danger"></span>
-            </div>
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    @TempData["ErrorMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
 
-            <div class="form-floating mb-3">
-                <label asp-for="Description"></label>
-                <textarea asp-for="Description" class="form-control" placeholder="Job Description" style="height: 100px;"></textarea>
-                <span asp-validation-for="Description" class="text-danger"></span>
-            </div>
+            <form asp-action="Create" method="post" class="needs-validation" novalidate>
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
-            <div class="form-floating mb-3">
-                <label asp-for="SlotsNeeded"></label>
-                <input asp-for="SlotsNeeded" class="form-control" type="number" placeholder="Number of Slots Needed" />
-                <span asp-validation-for="SlotsNeeded" class="text-danger"></span>
-            </div>
+                <div class="form-floating mb-3">
+                    <input asp-for="Title" class="form-control" placeholder="Title" />
+                    <label asp-for="Title">Title</label>
+                    <span asp-validation-for="Title" class="text-danger"></span>
+                </div>
 
-            <div class="form-floating mb-3">
-                <label asp-for="LocationId">Location</label> @* Показва "Location" като етикет *@
-                <select asp-for="LocationId" class="form-select" asp-items="ViewBag.Locations">
-                    <option value="">-- Select Location --</option>
-                </select>
-                <span asp-validation-for="LocationId" class="text-danger"></span>
-            </div>
+                <div class="form-floating mb-3">
+                    <textarea asp-for="Description" class="form-control" placeholder="Description" style="height: 100px"></textarea>
+                    <label asp-for="Description">Description</label>
+                    <span asp-validation-for="Description" class="text-danger"></span>
+                </div>
 
-            <div class="form-floating mb-3">
-                <label asp-for="CategoryId">Category</label> @* Показва "Category" като етикет *@
-                <select asp-for="CategoryId" class="form-select" asp-items="ViewBag.Categories">
-                    <option value="">-- Select Category --</option>
-                </select>
-                <span asp-validation-for="CategoryId" class="text-danger"></span>
-            </div>
+                <div class="form-floating mb-3">
+                    <input asp-for="SlotsNeeded" class="form-control" placeholder="Slots Needed" type="number" />
+                    <label asp-for="SlotsNeeded">Slots Needed</label>
+                    <span asp-validation-for="SlotsNeeded" class="text-danger"></span>
+                </div>
 
-            <div class="d-flex justify-content-between mt-4">
-                <input type="submit" value="Create" class="btn btn-primary" />
-                <a asp-action="MyJobs" class="btn btn-secondary">Back to My Jobs</a>
-            </div>
-        </form>
+                <div class="form-floating mb-3">
+                    <select asp-for="LocationId" class="form-select" asp-items="ViewBag.Locations as SelectList">
+                        <option value="">-- Select Location --</option>
+                    </select>
+                    <label asp-for="LocationId">Location</label>
+                    <span asp-validation-for="LocationId" class="text-danger"></span>
+                </div>
+
+                <div class="form-floating mb-3">
+                    <select asp-for="CategoryId" class="form-select" asp-items="ViewBag.Categories as SelectList">
+                        <option value="">-- Select Category --</option>
+                    </select>
+                    <label asp-for="CategoryId">Category</label>
+                    <span asp-validation-for="CategoryId" class="text-danger"></span>
+                </div>
+
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                    <button type="submit" class="btn btn-primary btn-lg px-4">Create</button>
+                    <a asp-action="MyJobs" class="btn btn-secondary btn-lg px-4">Back to My Jobs</a>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 

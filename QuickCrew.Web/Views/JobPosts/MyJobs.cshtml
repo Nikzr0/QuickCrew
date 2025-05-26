@@ -4,71 +4,88 @@
     ViewData["Title"] = "My Posted Jobs";
 }
 
-<h1>My Posted Jobs</h1>
+<link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+<link rel="stylesheet" href="~/css/myjobs.css" asp-append-version="true" />
 
-<p>
-    <a asp-action="Create" asp-controller="JobPosts">Create New Job Posting</a>
-</p>
+<div class="container py-5">
+    <div class="row align-items-center mb-5">
+        <div class="col-md-8">
+            <h1 class="display-4 fw-light text-primary">My Posted Jobs</h1>
+            <p class="lead text-muted">Manage your current job postings here.</p>
+        </div>
+        <div class="col-md-4 text-md-end">
+            <a asp-action="Create" class="btn btn-primary btn-lg shadow-sm">
+                <i class="bi bi-plus-circle-fill me-2"></i>Post a New Job
+            </a>
+        </div>
+    </div>
 
-@if (Model == null || !Model.Any())
-{
-    <p>You haven't posted any jobs yet.</p>
-}
-else
-{
-    <table class="table">
-        <thead>
-            <tr>
-                <th>
-                    @Html.DisplayNameFor(model => model.FirstOrDefault().Title)
-                </th>
-                <th>
-                    @Html.DisplayNameFor(model => model.FirstOrDefault().Description)
-                </th>
-                <th>
-                    @Html.DisplayNameFor(model => model.FirstOrDefault().SlotsNeeded)
-                </th>
-                <th>
-                    Location
-                </th>
-                <th>
-                    Category
-                </th>
-                <th>
-                    @Html.DisplayNameFor(model => model.FirstOrDefault().CreatedDate)
-                </th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (Model != null && Model.Any())
+    {
+        <div class="row g-4">
             @foreach (var item in Model)
             {
-                <tr>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.Title)
-                    </td>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.Description)
-                    </td>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.SlotsNeeded)
-                    </td>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.Location)
-                    </td>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.Category.Name)
-                    </td>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.CreatedDate)
-                    </td>
-                    <td>
-                        <a asp-action="Edit" asp-controller="JobPosts" asp-route-id="@item.Id">Edit</a> |
-                        <a asp-action="Details" asp-controller="JobPosts" asp-route-id="@item.Id">Details</a> |
-                        <a asp-action="Delete" asp-controller="JobPosts" asp-route-id="@item.Id">Delete</a>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
-}
+                <div class="col-md-6 col-lg-4 col-xl-3 d-flex">
+                    <div class="card job-listing-card flex-fill">
+                        <div class="card-header">
+                            <div>
+                                <h5 class="job-title">@item.Title</h5>
+                                <p class="job-location mb-0">
+                                    <i class="bi bi-geo-alt-fill me-1"></i>@item.Location?.City, @item.Location?.State
+                                </p>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <p class="job-description">
+                                @(item.Description != null && item.Description.Length > 60
+                                                        ? item.Description.Substring(0, 60) + "..."
+                                                        : item.Description)
+                    </p>
+                    <div class="mt-3">
+                        <p class="job-meta">
+                            <i class="bi bi-briefcase-fill"></i><strong>Slots:</strong> <span>@item.SlotsNeeded</span>
+                        </p>
+                        <p class="job-meta">
+                            <i class="bi bi-tag-fill"></i><strong>Category:</strong> <span>@item.Category?.Name</span>
+                        </p>
+                        <p class="job-meta mb-0">
+                            <i class="bi bi-calendar-event-fill"></i><strong>Posted:</strong> <span>@item.CreatedDate.ToShortDateString()</span>
+                        </p>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-details">View Details</a>
+                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-edit">Edit</a>
+                    <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-delete">Delete</a>
+                </div>
+            </div>
+        </div>
+                }
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-info text-center py-4" role="alert">
+            <h4 class="alert-heading">No Job Postings Found!</h4>
+            <p>It looks like you haven't posted any jobs yet. Be the first to create one!</p>
+            <hr>
+            <a asp-action="Create" class="btn btn-info">Post Your First Job</a>
+        </div>
+    }
+</div>
