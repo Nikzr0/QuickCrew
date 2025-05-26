@@ -11,7 +11,7 @@ namespace QuickCrew.Extensions
         {
             CreateMap<Location, LocationDto>()
                 .ForMember(dest => dest.FullAddress,
-                           opt => opt.MapFrom(src => $"{src.Address}, {src.City}, {src.State} {src.ZipCode}"));
+                                   opt => opt.MapFrom(src => $"{src.Address}, {src.City}, {src.State} {src.ZipCode}"));
             CreateMap<LocationDto, Location>();
 
             CreateMap<Category, CategoryDto>();
@@ -47,6 +47,7 @@ namespace QuickCrew.Extensions
                 .ForMember(dest => dest.ReviewedAt, opt => opt.MapFrom(src => src.ReviewedAt.ToLocalTime()));
 
             CreateMap<ReviewDto, Review>()
+                .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ForMember(dest => dest.Reviewer, opt => opt.Ignore())
                 .ForMember(dest => dest.JobPosting, opt => opt.Ignore())
                 .ForMember(dest => dest.ReviewedAt, opt => opt.Ignore());
