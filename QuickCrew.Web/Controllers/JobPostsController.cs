@@ -341,7 +341,7 @@ namespace QuickCrew.Web.Controllers
             }
         }
 
-        [HttpPost, ActionName("Delete")]
+        [HttpPost]
         [Authorize]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
@@ -356,31 +356,47 @@ namespace QuickCrew.Web.Controllers
                 }
                 _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
+                var jobToVerify = await _httpClient.GetFromJsonAsync<JobPostingDto>($"api/job-postings/{id}");
+                var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+                if (jobToVerify == null)
+                {
+                    _logger.LogWarning($"Attempt to delete non-existent job posting with ID: {id}");
+                    TempData["ErrorMessage"] = "Job listing not found.";
+                    return RedirectToAction(nameof(MyJobs));
+                }
+
+                if (jobToVerify.OwnerId != currentUserId)
+                {
+                    _logger.LogWarning($"Unauthorized delete attempt. User {currentUserId} tried to delete job {id} owned by {jobToVerify.OwnerId}.");
+                    TempData["ErrorMessage"] = "You are not authorized to delete this job posting.";
+                    return Forbid();
+                }
+
                 var response = await _httpClient.DeleteAsync($"api/job-postings/{id}");
 
                 if (!response.IsSuccessStatusCode)
                 {
                     var errorContent = await response.Content.ReadAsStringAsync();
                     _logger.LogError("API Error during job posting deletion: Status {StatusCode}, Content: {ErrorContent}", response.StatusCode, errorContent);
-                    ModelState.AddModelError(string.Empty, $"Failed to delete job posting: {errorContent}");
-                    return View(await _httpClient.GetFromJsonAsync<JobPostingDto>($"api/job-postings/{id}"));
+                    TempData["ErrorMessage"] = $"Failed to delete job listing: {errorContent}";
+                    return RedirectToAction(nameof(MyJobs));
                 }
 
-                TempData["SuccessMessage"] = "Job posting deleted successfully!";
+                TempData["SuccessMessage"] = "Job listing deleted successfully!";
                 return RedirectToAction(nameof(MyJobs));
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, $"Error deleting job posting {id}.");
-                ModelState.AddModelError(string.Empty, "An error occurred while deleting the job posting. Please try again.");
-                return View(await _httpClient.GetFromJsonAsync<JobPostingDto>($"api/job-postings/{id}"));
+                TempData["ErrorMessage"] = "An error occurred while deleting the job listing. Please try again.";
+                return RedirectToAction(nameof(MyJobs));
             }
             finally
             {
                 _httpClient.DefaultRequestHeaders.Authorization = null;
             }
         }
-
         [HttpGet]
         [Authorize]
         public async Task<IActionResult> Review(int id)
