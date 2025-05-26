@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authentication.BearerToken; // Този using може да се използва, ако запазваш ендпойнта за refresh, който използва Identity's BearerTokenOptions
+﻿using Microsoft.AspNetCore.Authentication.BearerToken;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Identity;

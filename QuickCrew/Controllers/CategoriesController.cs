@@ -69,7 +69,7 @@ namespace QuickCrew.Controllers
 
             var resultDto = _mapper.Map<CategoryDto>(category);
             return CreatedAtAction(
-                nameof(GetCategory), // Променено от string към nameof
+                nameof(GetCategory),
                 new { id = resultDto.Id },
                 resultDto
             );

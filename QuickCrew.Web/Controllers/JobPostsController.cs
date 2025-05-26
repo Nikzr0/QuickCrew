@@ -126,6 +126,7 @@ namespace QuickCrew.Web.Controllers
         public async Task<IActionResult> Create(JobPostingDto newJob)
         {
             var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var currentUserName = User.FindFirstValue(ClaimTypes.Name);
 
             if (string.IsNullOrEmpty(currentUserId))
             {
@@ -135,6 +136,10 @@ namespace QuickCrew.Web.Controllers
             }
 
             newJob.OwnerId = currentUserId;
+            newJob.OwnerName = currentUserName ?? "Unknown User";
+
+            ModelState.Remove("OwnerId");
+            ModelState.Remove("OwnerName");
 
             if (!ModelState.IsValid)
             {
@@ -513,7 +518,7 @@ namespace QuickCrew.Web.Controllers
             try
             {
                 var locations = await _httpClient.GetFromJsonAsync<List<LocationDto>>("api/locations");
-                ViewBag.Locations = new SelectList(locations, "Id", "FullAddress");
+                ViewBag.Locations = new SelectList(locations, "Id", "City");
 
                 var categories = await _httpClient.GetFromJsonAsync<List<CategoryDto>>("api/categories");
                 ViewBag.Categories = new SelectList(categories, "Id", "Name");
@@ -521,7 +526,7 @@ namespace QuickCrew.Web.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to load locations or categories for dropdowns.");
-                ViewBag.Locations = new SelectList(new List<LocationDto>(), "Id", "FullAddress");
+                ViewBag.Locations = new SelectList(new List<LocationDto>(), "Id", "City");
                 ViewBag.Categories = new SelectList(new List<CategoryDto>(), "Id", "Name");
                 TempData["ErrorMessage"] = "Could not load locations or categories. Please try again later.";
             }

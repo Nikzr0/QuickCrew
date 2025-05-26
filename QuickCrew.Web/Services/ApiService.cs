@@ -1,4 +1,4 @@
-﻿using QuickCrew.Shared.Models; // Референция към DTOs
+﻿using QuickCrew.Shared.Models;
 
 public class ApiService
 {
@@ -7,7 +7,7 @@ public class ApiService
     public ApiService(HttpClient httpClient)
     {
         _httpClient = httpClient;
-        _httpClient.BaseAddress = new Uri("https://localhost:7224"); // API адрес
+        _httpClient.BaseAddress = new Uri("https://localhost:7224");
     }
 
     // GET Locations
