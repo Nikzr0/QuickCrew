@@ -6,6 +6,7 @@ using QuickCrew.Data.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
+using Microsoft.Extensions.Logging; // Add this using for ILogger
 
 [Route("api/[controller]")]
 [ApiController]
@@ -13,11 +14,13 @@ public class JobPostingsController : ControllerBase
 {
     private readonly QuickCrewContext _context;
     private readonly IMapper _mapper;
+    private readonly ILogger<JobPostingsController> _logger;
 
-    public JobPostingsController(QuickCrewContext context, IMapper mapper)
+    public JobPostingsController(QuickCrewContext context, IMapper mapper, ILogger<JobPostingsController> logger)
     {
         _context = context;
         _mapper = mapper;
+        _logger = logger;
     }
 
     [HttpGet]
@@ -80,11 +83,11 @@ public class JobPostingsController : ControllerBase
         }
 
         var myJobPostings = await _context.JobPostings
-                                        .Where(jp => jp.OwnerId == currentUserId)
-                                        .Include(jp => jp.Location)
-                                        .Include(jp => jp.Category)
-                                        .OrderByDescending(jp => jp.CreatedDate)
-                                        .ToListAsync();
+                                         .Where(jp => jp.OwnerId == currentUserId)
+                                         .Include(jp => jp.Location)
+                                         .Include(jp => jp.Category)
+                                         .OrderByDescending(jp => jp.CreatedDate)
+                                         .ToListAsync();
 
         var jobPostingDtos = _mapper.Map<List<JobPostingDto>>(myJobPostings);
 
@@ -130,6 +133,11 @@ public class JobPostingsController : ControllerBase
                 throw;
             }
         }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error updating job posting in database.");
+            return StatusCode(500, "An error occurred while updating the job posting.");
+        }
 
         return NoContent();
     }
@@ -151,7 +159,25 @@ public class JobPostingsController : ControllerBase
         entity.CreatedDate = DateTime.UtcNow;
 
         _context.JobPostings.Add(entity);
-        await _context.SaveChangesAsync();
+
+        try
+        {
+            await _context.SaveChangesAsync();
+        }
+        catch (Microsoft.EntityFrameworkCore.DbUpdateException ex)
+        {
+            _logger.LogError(ex, "DbUpdateException: Error saving new job posting to database.");
+            if (ex.InnerException != null)
+            {
+                _logger.LogError(ex.InnerException, "Inner Exception for DbUpdateException:");
+            }
+            return StatusCode(500, "An error occurred while saving the job posting to the database. Check if CategoryId or LocationId are valid.");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "An unexpected error occurred while creating a job posting.");
+            return StatusCode(500, "An unexpected error occurred.");
+        }
 
         var resultDto = _mapper.Map<JobPostingDto>(entity);
         return CreatedAtAction("GetJobPosting", new { id = resultDto.Id }, resultDto);

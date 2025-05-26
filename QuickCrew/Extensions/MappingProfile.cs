@@ -1,5 +1,4 @@
-﻿// QuickCrew/Extensions/MappingProfile.cs
-using AutoMapper;
+﻿using AutoMapper;
 using QuickCrew.Data.Entities;
 using QuickCrew.Shared.Models;
 
@@ -9,19 +8,23 @@ namespace QuickCrew.Extensions
     {
         public MappingProfile()
         {
-            CreateMap<Location, LocationDto>().ReverseMap();
-            CreateMap<Category, CategoryDto>().ReverseMap();
+            CreateMap<Location, LocationDto>()
+                .ForMember(dest => dest.FullAddress,
+                           opt => opt.MapFrom(src => $"{src.Address}, {src.City}, {src.State} {src.ZipCode}"));
+            CreateMap<LocationDto, Location>();
+
+            CreateMap<Category, CategoryDto>();
+            CreateMap<CategoryDto, Category>();
 
             CreateMap<JobPosting, JobPostingDto>()
-                .ForMember(dest => dest.Location, opt => opt.MapFrom(src => src.Location)) // Map the Location object
-                .ForMember(dest => dest.Category, opt => opt.MapFrom(src => src.Category)) // Map the Category object
-                .ReverseMap();
+                .ForMember(dest => dest.Location, opt => opt.MapFrom(src => src.Location))
+                .ForMember(dest => dest.Category, opt => opt.MapFrom(src => src.Category));
 
             CreateMap<JobPostingDto, JobPosting>()
                 .ForMember(dest => dest.Category, opt => opt.Ignore())
-                .ForMember(dest => dest.Location, opt => opt.Ignore());
-
-            CreateMap<Category, CategoryDto>().ReverseMap(); // TODO: Currently one-way mapping, should be upgraded!
+                .ForMember(dest => dest.Location, opt => opt.Ignore())
+                .ForMember(dest => dest.Owner, opt => opt.Ignore())
+                .ForMember(dest => dest.CreatedDate, opt => opt.Ignore());
 
             CreateMap<Application, ApplicationDto>()
                 .ForMember(dest => dest.JobTitle, opt => opt.MapFrom(src => src.JobPosting.Title))
@@ -31,14 +34,7 @@ namespace QuickCrew.Extensions
             CreateMap<ApplicationDto, Application>()
                 .ForMember(dest => dest.JobPosting, opt => opt.Ignore())
                 .ForMember(dest => dest.User, opt => opt.Ignore())
-                .ForMember(dest => dest.AppliedAt, opt => opt.Ignore()); // Set server-side
-
-
-            CreateMap<Location, LocationDto>()
-                .ForMember(dest => dest.FullAddress,
-                    opt => opt.MapFrom(src => $"{src.Address}, {src.City}, {src.State} {src.ZipCode}"));
-
-            CreateMap<LocationDto, Location>();
+                .ForMember(dest => dest.AppliedAt, opt => opt.Ignore());
 
             CreateMap<Review, ReviewDto>()
                 .ForMember(dest => dest.ReviewerName, opt => opt.MapFrom(src => src.Reviewer.Name))

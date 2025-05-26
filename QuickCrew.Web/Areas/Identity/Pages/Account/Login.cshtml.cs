@@ -1,21 +1,19 @@
 ﻿#nullable disable
 
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
+using QuickCrew.Data.Entities;
+using QuickCrew.Extensions;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.UI.Services;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.Extensions.Logging;
-using QuickCrew.Data.Entities;
 using System.Net.Http.Json;
-using System.Text.Json;
-using Microsoft.Extensions.Configuration;
+using System.Threading.Tasks;
 
 namespace QuickCrew.Web.Areas.Identity.Pages.Account
 {
@@ -103,7 +101,7 @@ namespace QuickCrew.Web.Areas.Identity.Pages.Account
 
                     try
                     {
-                        var client = _httpClientFactory.CreateClient();
+                        var client = _httpClientFactory.CreateClient("ApiClient");
                         client.BaseAddress = new Uri(_configuration["ApiBaseUrl"]);
 
                         var tokenRequest = new { email = Input.Email, password = Input.Password };
@@ -120,9 +118,11 @@ namespace QuickCrew.Web.Areas.Identity.Pages.Account
                         }
                         else
                         {
-                            var tokenContent = await tokenResponse.Content.ReadFromJsonAsync<Dictionary<string, string>>();
-                            if (tokenContent != null && tokenContent.TryGetValue("accessToken", out var accessToken) && !string.IsNullOrEmpty(accessToken))
+                            var accessTokenResponse = await tokenResponse.Content.ReadFromJsonAsync<CustomIdentityApiEndpointRouteBuilderExtensions.AccessTokenResponse>();
+
+                            if (accessTokenResponse != null && !string.IsNullOrEmpty(accessTokenResponse.AccessToken))
                             {
+                                var accessToken = accessTokenResponse.AccessToken;
                                 HttpContext.Session.SetString("JWToken", accessToken);
                                 _logger.LogInformation("JWT Access Token obtained and stored in session.");
                             }
