@@ -1,0 +1,69 @@
+﻿@model QuickCrew.Shared.Models.JobPostingDto
+
+@{
+    ViewData["Title"] = "Редактиране на Обява";
+}
+
+<div class="container py-5">
+    <h1 class="display-4 fw-light text-primary mb-4">Редактиране на Обява</h1>
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <form asp-action="Edit" method="post" class="shadow-sm p-4 rounded bg-white">
+        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+        <input type="hidden" asp-for="Id" />
+        <input type="hidden" asp-for="OwnerId" />
+        <input type="hidden" asp-for="CreatedDate" />
+
+        <div class="mb-3">
+            <label asp-for="Title" class="form-label">Заглавие:</label>
+            <input asp-for="Title" class="form-control" />
+            <span asp-validation-for="Title" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Description" class="form-label">Описание:</label>
+            <textarea asp-for="Description" class="form-control" rows="5"></textarea>
+            <span asp-validation-for="Description" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="SlotsNeeded" class="form-label">Необходими места:</label>
+            <input asp-for="SlotsNeeded" class="form-control" type="number" />
+            <span asp-validation-for="SlotsNeeded" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="LocationId" class="form-label">Местоположение:</label>
+            <select asp-for="LocationId" asp-items="@(ViewBag.Locations as SelectList)" class="form-select">
+                <option value="">-- Изберете Местоположение --</option>
+            </select>
+            <span asp-validation-for="LocationId" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="CategoryId" class="form-label">Категория:</label>
+            <select asp-for="CategoryId" asp-items="@(ViewBag.Categories as SelectList)" class="form-select">
+                <option value="">-- Изберете Категория --</option>
+            </select>
+            <span asp-validation-for="CategoryId" class="text-danger"></span>
+        </div>
+
+        <div class="d-flex justify-content-end mt-4">
+            <a asp-action="MyJobs" class="btn btn-secondary me-2">Отмени</a>
+            <button type="submit" class="btn btn-primary">Save Changes</button>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
